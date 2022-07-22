@@ -1,0 +1,3 @@
+export const msgMain = `👾 Olá seja muito bem-vindo ao atendimento automatico da\n✌️ *Barbearia Optimus* 💇‍♂️\n\n⏩ Eu vou te apresentar algumas opções para esse atendimento.\n\nDigite 1️⃣ Para ver horarios disponíveis \ne fazer agendamento. \nDigite 2️⃣ Para fazer agendamento \nDigite 3️⃣ Para cancelar agendamento \nDigite 0️⃣ Para falar com um atendente`;
+
+export const msgAlert = `Por favor, escolha uma das opçoes abaixo 👇️`;

@@ -1,0 +1,6 @@
+node_modules
+./build
+!./build/.keep
+**.data.json
+**.node-persist**
+**_IGNORE_**
