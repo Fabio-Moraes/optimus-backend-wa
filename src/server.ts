@@ -1,10 +1,7 @@
-import { create, Client, NotificationLanguage } from "@open-wa/wa-automate";
+import { create, NotificationLanguage } from "@open-wa/wa-automate";
+import { ViewController } from "./controllers/ViewController";
 
-import { MoreTypesOfService } from "./messages/main/1_TypeOfServices/4_MoreTypesOfService";
-import { TypeOfServices } from "./messages/main/1_TypeOfServices";
-import { Main } from "./messages/main";
-
-export class Server {
+class Server {
   constructor() {
     this.initialize();
   }
@@ -19,14 +16,8 @@ export class Server {
       logConsole: false,
       popup: true,
       qrTimeout: 0,
-    }).then((client) => {
-      start(client);
-    });
-
-    function start(client: Client) {
-      Main(client);
-      TypeOfServices(client);
-      MoreTypesOfService(client);
-    }
+    }).then(ViewController);
   }
 }
+
+new Server();

@@ -2,7 +2,6 @@ import {
   create,
   Client,
   NotificationLanguage,
-  ChatId,
 } from "@open-wa/wa-automate";
 
 export class _draft {
