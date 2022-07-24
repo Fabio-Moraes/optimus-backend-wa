@@ -1,24 +1,24 @@
-import { TypesViews } from "../global/interfaces";
-import { status } from "../global/status";
+import type { TypesViews } from '../models/interfaces';
+import { status } from '../global/status';
 
-import { view } from "../messages/views";
-import { alert } from "../messages/alerts";
+import { view } from '../messages/views';
+import { alert } from '../messages/alerts';
 
 export async function MoreTypesOfServices(props: TypesViews) {
   switch (props.message.body.toLowerCase()) {
-    case "1":
+    case '1':
       break;
 
-    case "2":
+    case '2':
       break;
 
-    case "3":
+    case '3':
       break;
 
-    case "0":
+    case '0':
       await props.client
         .sendText(props.message.from, view.Main)
-        .then(() => (status.view = "Main"));
+        .then(() => { status.view = 'Main'; });
       break;
 
     default:

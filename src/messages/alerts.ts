@@ -1,3 +1,3 @@
 export const alert = {
-  OptionsBelow: `Por favor, escolha uma das opçoes abaixo 👇️`,
+  OptionsBelow: 'Por favor, escolha uma das opçoes abaixo 👇️',
 };
