@@ -18,9 +18,12 @@
     "esModuleInterop": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
     "baseUrl": "."
   },
   "exclude": [
+    "ormconfig.ts",
     "node_modules",
     "*.config.ts",
     "src/**/*.spec.ts"

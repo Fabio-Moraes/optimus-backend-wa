@@ -1,8 +1,12 @@
 import type { Client } from '@open-wa/wa-automate';
-import { status } from '@global/status';
+import { status } from '../global/status';
+import 'moment/locale/pt-br';
 
-import { MoreTypesOfServices } from '../views/MoreTypesOfServices';
+import { TimesMorning } from '../views/TimesMorning';
 import { TypesOfServices } from '../views/TypesOfServices';
+import { SelectedName } from '../views/SelectedName';
+import { SelectedData } from '../views/SelectedData';
+import { WhichPeriod } from '../views/WhichPeriod';
 import { Main } from '../views/Main';
 
 export function ViewController(client: Client) {
@@ -16,8 +20,20 @@ export function ViewController(client: Client) {
         await TypesOfServices({ client, message });
         break;
 
-      case 'MoreTypesOfServices':
-        await MoreTypesOfServices({ client, message });
+      case 'SelectedName':
+        await SelectedName({ client, message });
+        break;
+
+      case 'WhichPeriod':
+        await WhichPeriod({ client, message });
+        break;
+
+      case 'SelectedData':
+        await SelectedData({ client, message });
+        break;
+
+      case 'TimesMorning':
+        await TimesMorning({ client, message });
         break;
 
       default:

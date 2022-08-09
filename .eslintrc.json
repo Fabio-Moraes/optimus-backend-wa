@@ -19,6 +19,7 @@
         "@typescript-eslint/consistent-type-imports": "error",
         "import/prefer-default-export": "off",
         "import/no-unresolved": "off",
-        "import/extensions": "off"
+        "import/extensions": "off",
+        "camelcase": "off"
     }
 }
