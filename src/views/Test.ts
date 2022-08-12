@@ -1,6 +1,5 @@
 import type { TypesViews } from '../models/interfaces';
 import { GenerateCoupon } from '../components/GenerateCoupon';
-
 import { status } from '../global/status';
 import { view } from '../messages/views';
 import { db } from '../database/connect';
@@ -54,6 +53,11 @@ export async function Test(props: TypesViews) {
       status.view = 'SelectedData';
       props.client
         .sendText(props.message.from, view().SelectedData);
+      break;
+
+    case 'manha':
+      props.client
+        .sendText(props.message.from, view().TimesMorning);
       break;
 
     default:

@@ -25,7 +25,21 @@ const monName = [
   'novembro',
   'dezembro'];
 
-export function view() {
+const hours = [
+  '07:30:00',
+  '08:00:00',
+  '08:30:00',
+  '09:00:00',
+  '09:30:00',
+  '10:00:00',
+  '10:30:00',
+  '11:00:00',
+  '11:30:00',
+  '12:00:00'];
+
+const emojis = ['🕢', '🕗', '🕣', '🕘', '🕤', '🕙', '🕥', '🕚', '🕦', '🕛'];
+
+export function view(results: Array<{ service_time: string }> = []) {
   const oneDay = (1000 * 60 * 60 * 24);
   const date = new Date();
   const limiter = new Date((date.getTime() + (oneDay * 14)));
@@ -43,6 +57,37 @@ export function view() {
 
   const getMessage = `${dayName[message.getDay()]}, ${message.getDate()} de ${monName[message.getMonth()]} de ${message.getFullYear()}`;
 
+  const ValidateHours = (res: Array<{ service_time: string }>, selectHours: string) => {
+    if (!selectHours) return false;
+    return !res?.filter((item) => item.service_time === selectHours).length;
+  };
+
+  const indexHours = (value: number, time: string) => hours[Number(hours
+    .map((item, index) => (item === time ? index : ''))
+    .filter((item) => String(item))[0]) + value];
+
+  function testTimesMorning() {
+    if (status.service === 'corte_de_cabelo') {
+      return `*horários pela parte da manhã*\n${getMessage}\n\n${hours.map((time, index) => `${emojis[index]} ${time} ${ValidateHours(results, time) ? '🟢  ----  Disponível\n' : '🔴  ----  Reservado\n'}`).join('')}`;
+    }
+
+    return `*horários pela parte da manhã*\n${getMessage}\n\n${hours.map((time, index) => {
+      if (ValidateHours(results, time) && ValidateHours(results, indexHours(1, time))) {
+        return `${emojis[hours.findIndex((i) => i === time)]} ${time} 🟢  ----  Disponível\n`;
+      }
+
+      if (!ValidateHours(results, time) && ValidateHours(results, indexHours(1, time))) {
+        return `${emojis[index]} ${time} 🔴  ----  Reservado\n`;
+      }
+
+      if (ValidateHours(results, time) && ValidateHours(results, indexHours(-1, time))) {
+        return '';
+      }
+
+      return `${emojis[index]} ${time} 🔴  ----  Reservado\n`;
+    }).join('')}`;
+  }
+
   return {
     SelectedName: '💬 Digite seu nome para iniciar o atendimento automático:',
 
@@ -54,7 +99,7 @@ export function view() {
 
     WhichPeriod: 'Selecione o período desejado.\n\n 1️⃣ Período da tarde\n 2️⃣ Período da manhã\n\n • Digite *#inicio* para retornar ao menu inicial ou *#voltar* para voltar ao menu anterior.',
 
-    TimesMorning: `${getMessage}\n\n*horários pela parte da manhã* \n\n🕛 12:00 🟢  ----  Disponível\n🕦 11:30 🟢  ----  Disponível\n🕚 11:00 🔴  ----  Reservado\n🕥 10:30 🟢  ----  Disponível\n🕙 10:00 🔴  ----  Reservado\n🕤 09:30 🔴  ----  Reservado\n🕘 09:00 🟢  ----  Disponível\n🕣 08:30 🔴  ----  Reservado\n🕗 08:00 🟢  ----  Disponível\n🕢 07:30 🟢  ----  Disponível`,
+    TimesMorning: testTimesMorning(),
 
     TimesAfternoon: 'Período: Tarde\n\n*horários pela parte da tarde* \n\n🕐 13:00 🟢  ----  Disponível\n🕜 13:30 🟢  ----  Disponível\n🕑 14:00 🔴  ----  Reservado\n🕝 14:30 🟢  ----  Disponível\n🕒 15:00 🔴  ----  Reservado\n🕞 15:30 🔴  ----  Reservado\n🕓 16:00 🟢  ----  Disponível\n🕟 16:30 🔴  ----  Reservado\n🕔 17:00 🟢  ----  Disponível\n🕠 17:30 🟢  ----  Disponível',
   };

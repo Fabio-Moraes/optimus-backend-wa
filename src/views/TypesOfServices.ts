@@ -7,28 +7,28 @@ import { view } from '../messages/views';
 export async function TypesOfServices(props: TypesViews) {
   switch (props.message.body.toLowerCase()) {
     case '1':
-      status.service = 'Corte de cabelo';
+      status.service = 'corte_de_cabelo';
       status.view = 'SelectedData';
       await props.client
         .sendText(props.message.from, view().SelectedData);
       break;
 
     case '2':
-      status.service = 'Barba/sobrancelha';
+      status.service = 'barba_sobrancelha';
       status.view = 'SelectedData';
       await props.client
         .sendText(props.message.from, view().SelectedData);
       break;
 
     case '3':
-      status.service = 'Cabelo e barba/sobrancelha';
+      status.service = 'cabelo_e_barba_sobrancelha';
       status.view = 'SelectedData';
       await props.client
         .sendText(props.message.from, view().SelectedData);
       break;
 
     case '4':
-      status.service = 'Cerviços variados';
+      status.service = 'cerviços_variados';
       await props.client
         .sendText(props.message.from, view().SelectedData)
         .then(() => {
