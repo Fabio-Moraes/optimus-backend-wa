@@ -1,13 +1,17 @@
 interface variablesTypes {
+  view: string;
   name: string;
   service: string;
   data: string;
-  view: string;
+  period: string;
+  coupon: string;
 }
 
 export const status: variablesTypes = {
+  view: 'NameView',
   name: '',
   service: '',
   data: '',
-  view: 'SelectedName',
+  period: '',
+  coupon: '',
 };

@@ -7,39 +7,43 @@ import { alert } from '../messages/alerts';
 import { view } from '../messages/views';
 import { db } from '../database/connect';
 
-const hours = [
-  '07:30:00',
-  '08:00:00',
-  '08:30:00',
-  '09:00:00',
-  '09:30:00',
-  '10:00:00',
-  '10:30:00',
-  '11:00:00',
-  '11:30:00',
-  '12:00:00'];
+import 'dotenv/config';
+
+function hours() {
+  if (status.period === 'Morning') {
+    return process.env.MORNING.split(', ').map((item) => `${item}:00`);
+  }
+
+  if (status.period === 'Afternoon') {
+    return process.env.AFTERNOON.split(', ').map((item) => `${item}:00`);
+  }
+  return [];
+}
 
 function parseHours(input: string) {
   const regexExp = /^([0-1]?[0-9]|2[0-3])(:)([0-5][0-9])$/gi;
   return regexExp.test(input) ? input.split(':') : ['00', '00'];
 }
 
-export async function TimesMorning(props: TypesViews) {
+export async function HourView(props: TypesViews) {
   const splitHours = parseHours(props.message.body);
   const inputHours = [
     AddLeadingZeros(splitHours[0], 2),
     AddLeadingZeros(splitHours[1], 2),
     '00'];
 
-  const business = 'barbearia_optimus';
+  const business = process.env.BUSINESS.toLowerCase().replace(/ /g, '_');
   const name = status.name.replace(/ /g, '_');
   const phone = String(props.message.sender.id);
-  const { service } = status;
   const coupon = GenerateCoupon(4);
   const service_date = status.data.replace(/\//g, '-');
   const service_time = inputHours.join(':');
+  const service = status.service
+    .toLowerCase()
+    .replace(/(\/)|(\s)/g, '_')
+    .replace(/(ç)/g, 'c');
 
-  const indexHours = (value: number) => hours[Number(hours
+  const indexHours = (value: number) => hours()[Number(hours()
     .map((item, index) => (item === service_time ? index : ''))
     .filter((item) => String(item))[0]) + value];
 
@@ -70,26 +74,26 @@ export async function TimesMorning(props: TypesViews) {
 
   switch (props.message.body.toLowerCase()) {
     case '#inicio':
-      status.view = 'Main';
-      await props.client.sendText(props.message.from, view().Main);
+      status.view = 'MainView';
+      await props.client.sendText(props.message.from, view().MainView);
       break;
 
     case '#voltar':
-      status.view = 'WhichPeriod';
-      await props.client.sendText(props.message.from, view().WhichPeriod);
+      status.view = 'PeriodView';
+      await props.client.sendText(props.message.from, view().PeriodView);
       break;
 
     default:
       db.query(select, selectValues, (errorSelect, results) => {
         if (errorSelect) {
           props.client.sendText(props.message.from, alert().FailConnect);
-          props.client.sendText(props.message.from, view(results).TimesMorning);
+          props.client.sendText(props.message.from, view(results).HourView);
         }
 
-        if (hours.includes(inputHours.join(':'))) {
+        if (hours().includes(inputHours.join(':'))) {
           if (errorSelect) {
             props.client.sendText(props.message.from, alert().FailConnect);
-            props.client.sendText(props.message.from, view(results).TimesMorning);
+            props.client.sendText(props.message.from, view(results).HourView);
           }
 
           if (service === 'corte_de_cabelo') {
@@ -97,10 +101,11 @@ export async function TimesMorning(props: TypesViews) {
               db.query(insert, insertValues, (errorInsert) => {
                 if (errorInsert) {
                   props.client.sendText(props.message.from, alert().FailConnect);
-                  props.client.sendText(props.message.from, view(results).TimesMorning);
+                  props.client.sendText(props.message.from, view(results).HourView);
                 }
-
-                props.client.sendText(props.message.from, `Seu cupom é ${coupon}`);
+                status.coupon = coupon;
+                status.view = 'CouponView';
+                props.client.sendText(props.message.from, view().CouponView);
               });
             } else props.client.sendText(props.message.from, alert().TimeNotAvailable);
           } else if (ValidateHours(results, service_time)) {
@@ -109,16 +114,17 @@ export async function TimesMorning(props: TypesViews) {
               db.query(dualInsert, dualInsertValues(results), (errorInsert) => {
                 if (errorInsert) {
                   props.client.sendText(props.message.from, alert().FailConnect);
-                  props.client.sendText(props.message.from, view(results).TimesMorning);
+                  props.client.sendText(props.message.from, view(results).HourView);
                 }
-
-                props.client.sendText(props.message.from, `Seu cupom é ${coupon}`);
+                status.coupon = coupon;
+                status.view = 'CouponView';
+                props.client.sendText(props.message.from, view().CouponView);
               });
             } else props.client.sendText(props.message.from, alert().TimeNotAvailable);
           } else props.client.sendText(props.message.from, alert().TimeNotAvailable);
         } else {
           props.client.sendText(props.message.from, alert().InvalidTextFormat);
-          props.client.sendText(props.message.from, view(results).TimesMorning);
+          props.client.sendText(props.message.from, view(results).HourView);
         }
       });
       break;

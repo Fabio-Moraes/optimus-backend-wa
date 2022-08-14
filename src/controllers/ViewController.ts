@@ -2,38 +2,43 @@ import type { Client } from '@open-wa/wa-automate';
 import { status } from '../global/status';
 import 'moment/locale/pt-br';
 
-import { TimesMorning } from '../views/TimesMorning';
-import { TypesOfServices } from '../views/TypesOfServices';
-import { SelectedName } from '../views/SelectedName';
-import { SelectedData } from '../views/SelectedData';
-import { WhichPeriod } from '../views/WhichPeriod';
-import { Main } from '../views/Main';
+import { ServicesView } from '../views/ServicesView';
+import { PeriodView } from '../views/PeriodView';
+import { HourView } from '../views/HourView';
+import { NameView } from '../views/NameView';
+import { DateView } from '../views/DateView';
+import { MainView } from '../views/MainView';
+import { CouponView } from '../views/CouponView';
 
 export function ViewController(client: Client) {
   client.onMessage(async (message) => {
     switch (status.view) {
-      case 'Main':
-        await Main({ client, message });
+      case 'MainView':
+        await MainView({ client, message });
         break;
 
-      case 'TypesOfServices':
-        await TypesOfServices({ client, message });
+      case 'ServicesView':
+        await ServicesView({ client, message });
         break;
 
-      case 'SelectedName':
-        await SelectedName({ client, message });
+      case 'NameView':
+        await NameView({ client, message });
         break;
 
-      case 'WhichPeriod':
-        await WhichPeriod({ client, message });
+      case 'PeriodView':
+        await PeriodView({ client, message });
         break;
 
-      case 'SelectedData':
-        await SelectedData({ client, message });
+      case 'DateView':
+        await DateView({ client, message });
         break;
 
-      case 'TimesMorning':
-        await TimesMorning({ client, message });
+      case 'HourView':
+        await HourView({ client, message });
+        break;
+
+      case 'CouponView':
+        await CouponView({ client, message });
         break;
 
       default:

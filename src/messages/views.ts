@@ -1,6 +1,7 @@
 import { AddLeadingZeros } from '../components/AddLeadingZeros';
 import { FormatName } from '../components/FormatName';
 import { status } from '../global/status';
+import 'dotenv/config';
 
 const dayName = [
   'Domingo',
@@ -25,19 +26,18 @@ const monName = [
   'novembro',
   'dezembro'];
 
-const hours = [
-  '07:30:00',
-  '08:00:00',
-  '08:30:00',
-  '09:00:00',
-  '09:30:00',
-  '10:00:00',
-  '10:30:00',
-  '11:00:00',
-  '11:30:00',
-  '12:00:00'];
-
 const emojis = ['🕢', '🕗', '🕣', '🕘', '🕤', '🕙', '🕥', '🕚', '🕦', '🕛'];
+
+function hours() {
+  if (status.period === 'Morning') {
+    return process.env.MORNING.split(', ').map((item) => `${item}:00`);
+  }
+
+  if (status.period === 'Afternoon') {
+    return process.env.AFTERNOON.split(', ').map((item) => `${item}:00`);
+  }
+  return [];
+}
 
 export function view(results: Array<{ service_time: string }> = []) {
   const oneDay = (1000 * 60 * 60 * 24);
@@ -62,45 +62,45 @@ export function view(results: Array<{ service_time: string }> = []) {
     return !res?.filter((item) => item.service_time === selectHours).length;
   };
 
-  const indexHours = (value: number, time: string) => hours[Number(hours
+  const indexHours = (value: number, time: string) => hours()[Number(hours()
     .map((item, index) => (item === time ? index : ''))
     .filter((item) => String(item))[0]) + value];
 
-  function testTimesMorning() {
-    if (status.service === 'corte_de_cabelo') {
-      return `*horários pela parte da manhã*\n${getMessage}\n\n${hours.map((time, index) => `${emojis[index]} ${time} ${ValidateHours(results, time) ? '🟢  ----  Disponível\n' : '🔴  ----  Reservado\n'}`).join('')}`;
+  function HourView() {
+    if (status.service === process.env.ONESERVICE) {
+      return `Horários pela parte da *${status.period === 'Morning' ? 'manhã' : 'tarde'}*\n${getMessage}\n${status.service}\n\n📝 Para finalizar o agendamento digite a hora e munuto separados por dois-pontos ( *hora:minuto* ).\n\n${hours().map((time, index) => `${emojis[index]}  ${time.slice(0, -3)}  ${ValidateHours(results, time) ? '🟢  ----  Disponível\n' : '🔴  ----  Reservado\n'}`).join('')}\n • Digite *#inicio* para retornar ao menu inicial ou *#voltar* para voltar ao menu anterior.`;
     }
 
-    return `*horários pela parte da manhã*\n${getMessage}\n\n${hours.map((time, index) => {
+    return `Horários pela parte da *${status.period === 'Morning' ? 'manhã' : 'tarde'}*\n${getMessage}\n${status.service}\n\n📝 Para finalizar o agendamento digite a hora e munuto separados por dois-pontos ( *hora:minuto* ).\n\n${hours().map((time, index) => {
       if (ValidateHours(results, time) && ValidateHours(results, indexHours(1, time))) {
-        return `${emojis[hours.findIndex((i) => i === time)]} ${time} 🟢  ----  Disponível\n`;
+        return `${emojis[hours().findIndex((i) => i === time)]}  ${time.slice(0, -3)}  🟢  ----  Disponível\n`;
       }
 
       if (!ValidateHours(results, time) && ValidateHours(results, indexHours(1, time))) {
-        return `${emojis[index]} ${time} 🔴  ----  Reservado\n`;
+        return `${emojis[index]}  ${time.slice(0, -3)}  🔴  ----  Reservado\n`;
       }
 
       if (ValidateHours(results, time) && ValidateHours(results, indexHours(-1, time))) {
         return '';
       }
 
-      return `${emojis[index]} ${time} 🔴  ----  Reservado\n`;
-    }).join('')}`;
+      return `${emojis[index]}  ${time.slice(0, -3)}  🔴  ----  Reservado\n`;
+    }).join('')}\n • Digite *#inicio* para retornar ao menu inicial ou *#voltar* para voltar ao menu anterior.`;
   }
 
   return {
-    SelectedName: '💬 Digite seu nome para iniciar o atendimento automático:',
+    NameView: '💬 Digite seu nome para iniciar o atendimento automático:',
 
-    SelectedData: `Escolhar um data entre *${getNow.join('/')}* á *${getLimiter.join('/')}* exceto final de semana e feriados. 🗓️\n\n📝 Digite o dia, mês e ano separados por barra ( *dia/mês/ano* ).\n\n • Digite *#inicio* para retornar ao menu inicial ou *#voltar* para voltar ao menu anterior.`,
+    DateView: `Escolhar um data entre *${getNow.join('/')}* á *${getLimiter.join('/')}* exceto final de semana e feriados. 🗓️\n\n📝 Digite o dia, mês e ano separados por barra ( *dia/mês/ano* ).\n\n • Digite *#inicio* para retornar ao menu inicial ou *#voltar* para voltar ao menu anterior.`,
 
-    Main: `👾 Olá, ${FormatName(status.name)}, seja muito bem-vindo ao atendimento automático.\n\n✌️ *Barbearia Optimus* 💇‍♂️\n\n ⏩ Para agilizar o seu atendimento responda com o número da opção desejada.\n\n 1️⃣ - Horarios disponíveis \n 2️⃣ - Fazer agendamento \n 3️⃣ - Cancelar agendamento \n 0️⃣ - Falar com um atendente \n\n👤 Para alterar o seu nome de usuario, digite: *#perfil*`,
+    MainView: `👾 Olá, ${FormatName(status.name)}, seja muito bem-vindo ao atendimento automático.\n\n✌️ *${process.env.BUSINESS}* 💇‍♂️\n\n ⏩ Para agilizar o seu atendimento responda com o número da opção desejada.\n\n 1️⃣ - Horarios disponíveis \n 2️⃣ - Fazer agendamento \n 3️⃣ - Cancelar agendamento \n 0️⃣ - Falar com um atendente \n\n👤 Para alterar o seu nome de usuario, digite: *#perfil*`,
 
-    TypesOfServices: '*Escolha o tipo de serviço* \n\n 1️⃣ - Corte de cabelo\n 2️⃣ - Barba/sobrancelha\n 3️⃣ - Cabelo e barba/sobrancelha\n 4️⃣ - Serviços variados\n\n • Digite *#inicio* para voltar ao menu principal.',
+    ServicesView: `*Escolha o tipo de serviço* \n\n 1️⃣ - ${process.env.ONESERVICE}\n 2️⃣ - ${process.env.TWOSERVICE}\n 3️⃣ - ${process.env.THREESERVICE}\n 4️⃣ - ${process.env.OTRERSERVICE}\n\n • Digite *#inicio* para voltar ao menu principal.`,
 
-    WhichPeriod: 'Selecione o período desejado.\n\n 1️⃣ Período da tarde\n 2️⃣ Período da manhã\n\n • Digite *#inicio* para retornar ao menu inicial ou *#voltar* para voltar ao menu anterior.',
+    PeriodView: 'Selecione o período desejado.\n\n 1️⃣ Período da tarde\n 2️⃣ Período da manhã\n\n • Digite *#inicio* para retornar ao menu inicial ou *#voltar* para voltar ao menu anterior.',
 
-    TimesMorning: testTimesMorning(),
+    HourView: HourView(),
 
-    TimesAfternoon: 'Período: Tarde\n\n*horários pela parte da tarde* \n\n🕐 13:00 🟢  ----  Disponível\n🕜 13:30 🟢  ----  Disponível\n🕑 14:00 🔴  ----  Reservado\n🕝 14:30 🟢  ----  Disponível\n🕒 15:00 🔴  ----  Reservado\n🕞 15:30 🔴  ----  Reservado\n🕓 16:00 🟢  ----  Disponível\n🕟 16:30 🔴  ----  Reservado\n🕔 17:00 🟢  ----  Disponível\n🕠 17:30 🟢  ----  Disponível',
+    CouponView: `Agendamento concluído com sucesso\n\n${getMessage}\nPeriodo da ${status.period === 'Morning' ? 'manhã' : 'tarde'}\n${status.service}\n\n 1️⃣ - Realizar outro agendamento\n 0️⃣ - Finalizar o atendimento\n\nSeu cupom é ${status.coupon}`,
   };
 }

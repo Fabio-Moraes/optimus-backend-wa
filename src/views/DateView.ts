@@ -14,7 +14,7 @@ function addZero(value: string | number) {
   return `0${value}`.toString().slice(-2);
 }
 
-export async function SelectedData(props: TypesViews) {
+export async function DateView(props: TypesViews) {
   const split = parseDate(props.message.body);
   const oneDay = (1000 * 60 * 60 * 24);
   const date = new Date();
@@ -28,15 +28,15 @@ export async function SelectedData(props: TypesViews) {
 
   switch (props.message.body.toLowerCase()) {
     case '#inicio':
-      status.view = 'Main';
+      status.view = 'MainView';
       await props.client
-        .sendText(props.message.from, view().Main);
+        .sendText(props.message.from, view().MainView);
       break;
 
     case '#voltar':
-      status.view = 'TypesOfServices';
+      status.view = 'ServicesView';
       await props.client
-        .sendText(props.message.from, view().TypesOfServices);
+        .sendText(props.message.from, view().ServicesView);
       break;
 
     default:
@@ -44,20 +44,20 @@ export async function SelectedData(props: TypesViews) {
         if (getInput.getTime() <= getLimiter.getTime()
           && getInput.getTime() >= getNow.getTime()) {
           status.data = input.join('/');
-          status.view = 'WhichPeriod';
+          status.view = 'PeriodView';
           await props.client
-            .sendText(props.message.from, view().WhichPeriod);
+            .sendText(props.message.from, view().PeriodView);
         } else {
           await props.client
             .sendText(props.message.from, alert().InvalidDate);
           await props.client
-            .sendText(props.message.from, view().SelectedData);
+            .sendText(props.message.from, view().DateView);
         }
       } else {
         await props.client
           .sendText(props.message.from, alert().InvalidTextFormat);
         await props.client
-          .sendText(props.message.from, view().SelectedData);
+          .sendText(props.message.from, view().DateView);
       }
       break;
   }

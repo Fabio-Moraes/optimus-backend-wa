@@ -2,14 +2,14 @@ import type { TypesViews } from '../models/interfaces';
 
 import { status } from '../global/status';
 import { view } from '../messages/views';
-import { Test } from '../views/Test';
+import { Test } from '../views/TestView';
 
-export async function Main(props: TypesViews) {
+export async function MainView(props: TypesViews) {
   switch (props.message.body.toLocaleLowerCase()) {
     case '1':
-      status.view = 'TypesOfServices';
+      status.view = 'ServicesView';
       await props.client
-        .sendText(props.message.from, view().TypesOfServices);
+        .sendText(props.message.from, view().ServicesView);
       break;
 
     case '2':
@@ -27,15 +27,15 @@ export async function Main(props: TypesViews) {
       break;
 
     case '#perfil':
-      status.view = 'Main';
+      status.view = 'MainView';
       status.name = '';
       await props.client
-        .sendText(props.message.from, view().SelectedName);
+        .sendText(props.message.from, view().NameView);
       break;
 
     default:
       // if (status.name === '') status.name = props.message.body;
-      // await props.client.sendText(props.message.from, view().Main);
+      // await props.client.sendText(props.message.from, view().MainView);
       Test(props);
       break;
   }
