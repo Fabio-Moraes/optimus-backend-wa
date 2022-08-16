@@ -2,23 +2,12 @@ import { GenerateCoupon } from '../components/GenerateCoupon';
 import type { TypesViews } from '../models/interfaces';
 import { AddLeadingZeros } from '../components/AddLeadingZeros';
 
-import { status } from '../global/status';
+// import { status } from '../global/status';
 import { alert } from '../messages/alerts';
 import { view } from '../messages/views';
 import { db } from '../database/connect';
 
 import 'dotenv/config';
-
-function hours() {
-  if (status.period === 'Morning') {
-    return process.env.MORNING.split(', ').map((item) => `${item}:00`);
-  }
-
-  if (status.period === 'Afternoon') {
-    return process.env.AFTERNOON.split(', ').map((item) => `${item}:00`);
-  }
-  return [];
-}
 
 function parseHours(input: string) {
   const regexExp = /^([0-1]?[0-9]|2[0-3])(:)([0-5][0-9])$/gi;
@@ -26,6 +15,19 @@ function parseHours(input: string) {
 }
 
 export async function HourView(props: TypesViews) {
+  const { status } = props;
+
+  function hours() {
+    if (status[`PERIOD${props.message.sender.id}`.split('@')[0]] === 'Morning') {
+      return process.env.MORNING.split(', ').map((item) => `${item}:00`);
+    }
+
+    if (status[`PERIOD${props.message.sender.id}`.split('@')[0]] === 'Afternoon') {
+      return process.env.AFTERNOON.split(', ').map((item) => `${item}:00`);
+    }
+    return [];
+  }
+
   const splitHours = parseHours(props.message.body);
   const inputHours = [
     AddLeadingZeros(splitHours[0], 2),
@@ -33,12 +35,12 @@ export async function HourView(props: TypesViews) {
     '00'];
 
   const business = process.env.BUSINESS.toLowerCase().replace(/ /g, '_');
-  const name = status.name.replace(/ /g, '_');
+  const name = status[`NAME${props.message.sender.id}`.split('@')[0]].replace(/ /g, '_');
   const phone = String(props.message.sender.id);
   const coupon = GenerateCoupon(4);
-  const service_date = status.data.replace(/\//g, '-');
+  const service_date = status[`DATE${props.message.sender.id}`.split('@')[0]].replace(/\//g, '-');
   const service_time = inputHours.join(':');
-  const service = status.service
+  const service = status[`SERVICE${props.message.sender.id}`.split('@')[0]]
     .toLowerCase()
     .replace(/(\/)|(\s)/g, '_')
     .replace(/(ç)/g, 'c');
@@ -74,13 +76,19 @@ export async function HourView(props: TypesViews) {
 
   switch (props.message.body.toLowerCase()) {
     case '#inicio':
-      status.view = 'MainView';
-      await props.client.sendText(props.message.from, view().MainView);
+      status[`VIEW${props.message.sender.id}`.split('@')[0]] = 'MainView';
+      await props.client.sendText(props.message.from, view(props).MainView);
       break;
 
     case '#voltar':
-      status.view = 'PeriodView';
-      await props.client.sendText(props.message.from, view().PeriodView);
+      status[`VIEW${props.message.sender.id}`.split('@')[0]] = 'PeriodView';
+      await props.client.sendText(props.message.from, view(props).PeriodView);
+      break;
+
+    case '#sair':
+      status[`VIEW${props.message.sender.id}`.split('@')[0]] = 'NameView';
+      await props.client
+        .sendText(props.message.from, alert().Cancel);
       break;
 
     default:
@@ -104,8 +112,8 @@ export async function HourView(props: TypesViews) {
                   props.client.sendText(props.message.from, view(results).HourView);
                 }
                 status.coupon = coupon;
-                status.view = 'CouponView';
-                props.client.sendText(props.message.from, view().CouponView);
+                status[`VIEW${props.message.sender.id}`.split('@')[0]] = 'CouponView';
+                props.client.sendText(props.message.from, view(props).CouponView);
               });
             } else props.client.sendText(props.message.from, alert().TimeNotAvailable);
           } else if (ValidateHours(results, service_time)) {
@@ -114,11 +122,11 @@ export async function HourView(props: TypesViews) {
               db.query(dualInsert, dualInsertValues(results), (errorInsert) => {
                 if (errorInsert) {
                   props.client.sendText(props.message.from, alert().FailConnect);
-                  props.client.sendText(props.message.from, view(results).HourView);
+                  props.client.sendText(props.message.from, view(props, results).HourView);
                 }
                 status.coupon = coupon;
-                status.view = 'CouponView';
-                props.client.sendText(props.message.from, view().CouponView);
+                status[`VIEW${props.message.sender.id}`.split('@')[0]] = 'CouponView';
+                props.client.sendText(props.message.from, view(props).CouponView);
               });
             } else props.client.sendText(props.message.from, alert().TimeNotAvailable);
           } else props.client.sendText(props.message.from, alert().TimeNotAvailable);

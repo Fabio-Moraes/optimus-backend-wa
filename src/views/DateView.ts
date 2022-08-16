@@ -1,7 +1,7 @@
 import moment from 'moment';
 import type { TypesViews } from '../models/interfaces';
 
-import { status } from '../global/status';
+// import { status } from '../global/status';
 import { alert } from '../messages/alerts';
 import { view } from '../messages/views';
 
@@ -15,6 +15,8 @@ function addZero(value: string | number) {
 }
 
 export async function DateView(props: TypesViews) {
+  const { status } = props;
+
   const split = parseDate(props.message.body);
   const oneDay = (1000 * 60 * 60 * 24);
   const date = new Date();
@@ -28,36 +30,42 @@ export async function DateView(props: TypesViews) {
 
   switch (props.message.body.toLowerCase()) {
     case '#inicio':
-      status.view = 'MainView';
+      status[`VIEW${props.message.sender.id}`.split('@')[0]] = 'MainView';
       await props.client
-        .sendText(props.message.from, view().MainView);
+        .sendText(props.message.from, view(props).MainView);
       break;
 
     case '#voltar':
-      status.view = 'ServicesView';
+      status[`VIEW${props.message.sender.id}`.split('@')[0]] = 'ServicesView';
       await props.client
-        .sendText(props.message.from, view().ServicesView);
+        .sendText(props.message.from, view(props).ServicesView);
+      break;
+
+    case '#sair':
+      status[`VIEW${props.message.sender.id}`.split('@')[0]] = 'NameView';
+      await props.client
+        .sendText(props.message.from, alert().Cancel);
       break;
 
     default:
       if (moment(input.join('/'), 'YYYY/MM/DD', true).isValid()) {
         if (getInput.getTime() <= getLimiter.getTime()
           && getInput.getTime() >= getNow.getTime()) {
-          status.data = input.join('/');
-          status.view = 'PeriodView';
+          status[`DATE${props.message.sender.id}`.split('@')[0]] = input.join('/');
+          status[`VIEW${props.message.sender.id}`.split('@')[0]] = 'PeriodView';
           await props.client
-            .sendText(props.message.from, view().PeriodView);
+            .sendText(props.message.from, view(props).PeriodView);
         } else {
           await props.client
             .sendText(props.message.from, alert().InvalidDate);
           await props.client
-            .sendText(props.message.from, view().DateView);
+            .sendText(props.message.from, view(props).DateView);
         }
       } else {
         await props.client
           .sendText(props.message.from, alert().InvalidTextFormat);
         await props.client
-          .sendText(props.message.from, view().DateView);
+          .sendText(props.message.from, view(props).DateView);
       }
       break;
   }

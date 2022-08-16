@@ -15,5 +15,9 @@ export function alert() {
     FailConnect: 'ERRO! Não foi possível comunicar com o servidor. Por favor, tente novamente mais tarde',
 
     TimeNotAvailable: 'Já está agendado, por favor, escolha um outro horario',
+
+    Finished: 'Agradecemos por confiar em nosso atendimento. Volte sempre! 🎉🎉',
+
+    Cancel: 'Agradecemos pela visita. Volte sempre!',
   };
 }

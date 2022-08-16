@@ -1,4 +1,4 @@
-export function FormatName(name: string) {
+export function FormatName(name = '') {
   const limiter = name
     .toLowerCase()
     .replace(/(?:^|\s)\S/g, (a) => a.toUpperCase());

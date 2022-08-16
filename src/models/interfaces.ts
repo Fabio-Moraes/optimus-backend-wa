@@ -7,4 +7,7 @@ export interface TypesViews {
     sender: Contact;
     body: string;
   };
+  status: {
+    [k: string]: string
+  }
 }
