@@ -1,7 +1,7 @@
 import moment from 'moment';
 import type { TypesViews } from '../models/interfaces';
 
-// import { status } from '../global/status';
+import { CleanStatus } from '../components/CleanStatus';
 import { alert } from '../messages/alerts';
 import { view } from '../messages/views';
 
@@ -42,7 +42,9 @@ export async function DateView(props: TypesViews) {
       break;
 
     case '#sair':
-      status[`VIEW${props.message.sender.id}`.split('@')[0]] = 'NameView';
+      status[`NAME${props.message.sender.id}`.split('@')[0]] = '';
+      status[`VIEW${props.message.sender.id}`.split('@')[0]] = '';
+      CleanStatus(props);
       await props.client
         .sendText(props.message.from, alert().Cancel);
       break;

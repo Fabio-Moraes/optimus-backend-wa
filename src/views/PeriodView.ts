@@ -1,6 +1,6 @@
 import type { TypesViews } from '../models/interfaces';
+import { CleanStatus } from '../components/CleanStatus';
 
-// import { status } from '../global/status';
 import { alert } from '../messages/alerts';
 import { view } from '../messages/views';
 import { db } from '../database/connect';
@@ -11,8 +11,13 @@ export async function PeriodView(props: TypesViews) {
   const business = process.env.BUSINESS.replace(/ /g, '_').toLowerCase();
   const service_date = status[`DATE${props.message.sender.id}`.split('@')[0]].replace(/\//g, '-');
 
-  const selectValues = [business, service_date];
-  const select = 'SELECT service_time FROM optimus WHERE business = ? AND service_date = ?';
+  const employee = status[`EMPLOYEE${props.message.sender.id}`.split('@')[0]]
+    .toLowerCase()
+    .replace(/(\/)|(\s)/g, '_')
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+
+  const selectValues = [business, employee, service_date];
+  const select = 'SELECT service_time FROM optimus WHERE business = ? AND employee = ? AND service_date = ?';
 
   switch (props.message.body.toLowerCase()) {
     case '1':
@@ -46,7 +51,9 @@ export async function PeriodView(props: TypesViews) {
       break;
 
     case '#sair':
-      status[`VIEW${props.message.sender.id}`.split('@')[0]] = 'NameView';
+      status[`NAME${props.message.sender.id}`.split('@')[0]] = '';
+      status[`VIEW${props.message.sender.id}`.split('@')[0]] = '';
+      CleanStatus(props);
       await props.client
         .sendText(props.message.from, alert().Cancel);
       break;

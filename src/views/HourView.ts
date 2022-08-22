@@ -1,8 +1,8 @@
-import { GenerateCoupon } from '../components/GenerateCoupon';
+import { GenerateIdentifier } from '../components/GenerateIdentifier';
 import type { TypesViews } from '../models/interfaces';
 import { AddLeadingZeros } from '../components/AddLeadingZeros';
+import { CleanStatus } from '../components/CleanStatus';
 
-// import { status } from '../global/status';
 import { alert } from '../messages/alerts';
 import { view } from '../messages/views';
 import { db } from '../database/connect';
@@ -37,42 +37,49 @@ export async function HourView(props: TypesViews) {
   const business = process.env.BUSINESS.toLowerCase().replace(/ /g, '_');
   const name = status[`NAME${props.message.sender.id}`.split('@')[0]].replace(/ /g, '_');
   const phone = String(props.message.sender.id);
-  const coupon = GenerateCoupon(4);
+  const identifier = GenerateIdentifier(4);
   const service_date = status[`DATE${props.message.sender.id}`.split('@')[0]].replace(/\//g, '-');
   const service_time = inputHours.join(':');
+
+  const employee = status[`EMPLOYEE${props.message.sender.id}`.split('@')[0]]
+    .toLowerCase()
+    .replace(/(\/)|(\s)/g, '_')
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+
   const service = status[`SERVICE${props.message.sender.id}`.split('@')[0]]
     .toLowerCase()
     .replace(/(\/)|(\s)/g, '_')
-    .replace(/(ç)/g, 'c');
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '');
 
   const indexHours = (value: number) => hours()[Number(hours()
     .map((item, index) => (item === service_time ? index : ''))
     .filter((item) => String(item))[0]) + value];
 
-  const selectValues = [business, service_date];
-  const select = 'SELECT service_time FROM optimus WHERE business = ? AND service_date = ?';
+  const selectValues = [business, employee, service_date];
+  const select = 'SELECT service_time FROM optimus WHERE business = ? AND employee = ? AND service_date = ?;';
 
   const ValidateHours = (results: Array<{ service_time: string }>, selectHours: string) => {
     if (!selectHours) return false;
     return !results?.filter((item) => item.service_time === selectHours).length;
   };
 
-  const insertValues = [business, name, phone, service, coupon, service_date, service_time];
-  const insert = 'INSERT INTO optimus SET business = ?, name = ?, phone = ?, service = ?, coupon = ?, service_date = ?, service_time = ?;';
+  const insertValues = [
+    business, employee, name, phone, service, identifier, service_date, service_time];
+  const insert = 'INSERT INTO optimus SET business = ?, employee = ?, name = ?, phone = ?, service = ?, identifier = ?, service_date = ?, service_time = ?;';
 
   const dualInsertValues = (results: Array<{ service_time: string }>) => {
     if (ValidateHours(results, indexHours(1))) {
-      return [business, name, phone, service, coupon, service_date, service_time,
-        business, name, phone, service, coupon, service_date, indexHours(1)];
+      return [business, employee, name, phone, service, identifier, service_date, service_time,
+        business, employee, name, phone, service, identifier, service_date, indexHours(1)];
     }
 
     if (ValidateHours(results, indexHours(-1))) {
-      return [business, name, phone, service, coupon, service_date, service_time,
-        business, name, phone, service, coupon, service_date, indexHours(-1)];
+      return [business, employee, name, phone, service, identifier, service_date, service_time,
+        business, employee, name, phone, service, identifier, service_date, indexHours(-1)];
     }
     return [];
   };
-  const dualInsert = 'INSERT INTO optimus (business, name, phone, service, coupon, service_date, service_time) VALUES(?,?,?,?,?,?,?), (?,?,?,?,?,?,?);';
+  const dualInsert = 'INSERT INTO optimus (business, employee, name, phone, service, identifier, service_date, service_time) VALUES(?,?,?,?,?,?,?,?), (?,?,?,?,?,?,?,?);';
 
   switch (props.message.body.toLowerCase()) {
     case '#inicio':
@@ -86,7 +93,9 @@ export async function HourView(props: TypesViews) {
       break;
 
     case '#sair':
-      status[`VIEW${props.message.sender.id}`.split('@')[0]] = 'NameView';
+      status[`NAME${props.message.sender.id}`.split('@')[0]] = '';
+      status[`VIEW${props.message.sender.id}`.split('@')[0]] = '';
+      CleanStatus(props);
       await props.client
         .sendText(props.message.from, alert().Cancel);
       break;
@@ -94,6 +103,7 @@ export async function HourView(props: TypesViews) {
     default:
       db.query(select, selectValues, (errorSelect, results) => {
         if (errorSelect) {
+          props.client.sendText(props.message.from, `${errorSelect}0`);
           props.client.sendText(props.message.from, alert().FailConnect);
           props.client.sendText(props.message.from, view(results).HourView);
         }
@@ -108,12 +118,13 @@ export async function HourView(props: TypesViews) {
             if (ValidateHours(results, service_time)) {
               db.query(insert, insertValues, (errorInsert) => {
                 if (errorInsert) {
+                  props.client.sendText(props.message.from, `${errorSelect}1`);
                   props.client.sendText(props.message.from, alert().FailConnect);
                   props.client.sendText(props.message.from, view(results).HourView);
                 }
-                status.coupon = coupon;
-                status[`VIEW${props.message.sender.id}`.split('@')[0]] = 'CouponView';
-                props.client.sendText(props.message.from, view(props).CouponView);
+                status[`identifier${props.message.sender.id}`.split('@')[0]] = identifier;
+                status[`VIEW${props.message.sender.id}`.split('@')[0]] = 'IdentifierView';
+                props.client.sendText(props.message.from, view(props).IdentifierView);
               });
             } else props.client.sendText(props.message.from, alert().TimeNotAvailable);
           } else if (ValidateHours(results, service_time)) {
@@ -121,18 +132,20 @@ export async function HourView(props: TypesViews) {
               || ValidateHours(results, indexHours(-1))) {
               db.query(dualInsert, dualInsertValues(results), (errorInsert) => {
                 if (errorInsert) {
+                  props.client.sendText(props.message.from, `${errorSelect}2`);
                   props.client.sendText(props.message.from, alert().FailConnect);
                   props.client.sendText(props.message.from, view(props, results).HourView);
                 }
-                status.coupon = coupon;
-                status[`VIEW${props.message.sender.id}`.split('@')[0]] = 'CouponView';
-                props.client.sendText(props.message.from, view(props).CouponView);
+                status[`identifier${props.message.sender.id}`.split('@')[0]] = identifier;
+                status[`VIEW${props.message.sender.id}`.split('@')[0]] = 'IdentifierView';
+                props.client.sendText(props.message.from, view(props).IdentifierView);
               });
             } else props.client.sendText(props.message.from, alert().TimeNotAvailable);
           } else props.client.sendText(props.message.from, alert().TimeNotAvailable);
         } else {
+          props.client.sendText(props.message.from, `${errorSelect}3`);
           props.client.sendText(props.message.from, alert().InvalidTextFormat);
-          props.client.sendText(props.message.from, view(results).HourView);
+          props.client.sendText(props.message.from, view(props, results).HourView);
         }
       });
       break;

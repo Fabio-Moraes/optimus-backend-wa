@@ -1,7 +1,6 @@
 import type { TypesViews } from '../models/interfaces';
 import { AddLeadingZeros } from '../components/AddLeadingZeros';
 import { FormatName } from '../components/FormatName';
-// import { status } from '../global/status';
 import 'dotenv/config';
 
 const dayName = [
@@ -29,7 +28,16 @@ const monName = [
 
 const emojis = ['🕢', '🕗', '🕣', '🕘', '🕤', '🕙', '🕥', '🕚', '🕦', '🕛'];
 
-export function view(props: TypesViews, results: Array<{ service_time: string }> = []) {
+interface TypeResults {
+  name: string;
+  service: string;
+  employee: string;
+  service_time: string;
+  service_date: string;
+  identifier: string;
+}
+
+export function view(props: TypesViews, results: TypeResults[] = []) {
   function hours() {
     if (props.status[`PERIOD${props.message.sender.id}`.split('@')[0]] === 'Morning') {
       return process.env.MORNING.split(', ').map((item) => `${item}:00`);
@@ -49,12 +57,12 @@ export function view(props: TypesViews, results: Array<{ service_time: string }>
   const getNow = [
     AddLeadingZeros(date.getDate(), 2),
     AddLeadingZeros((date.getMonth() + 1), 2),
-    date.getFullYear()];
+    String(date.getFullYear()).substring(2)];
 
   const getLimiter = [
     AddLeadingZeros(limiter.getDate(), 2),
     AddLeadingZeros((limiter.getMonth() + 1), 2),
-    limiter.getFullYear()];
+    String(limiter.getFullYear()).substring(2)];
 
   const getMessage = `${dayName[message.getDay()]}, ${message.getDate()} de ${monName[message.getMonth()]} de ${message.getFullYear()}`;
 
@@ -69,10 +77,10 @@ export function view(props: TypesViews, results: Array<{ service_time: string }>
 
   function HourView() {
     if (props.status[`SERVICE${props.message.sender.id}`.split('@')[0]] === process.env.ONESERVICE) {
-      return `Horários pela parte da *${props.status[`PERIOD${props.message.sender.id}`.split('@')[0]] === 'Morning' ? 'manhã' : 'tarde'}*\n${getMessage}\n${props.status[`SERVICE${props.message.sender.id}`.split('@')[0]]}\n\n 📝 Para finalizar o agendamento digite a hora e minuto separados por dois-pontos ( *hora:minuto* ).\n\n${hours().map((time, index) => `${emojis[index]}  ${time.slice(0, -3)}  ${ValidateHours(results, time) ? '🟢  ----  Disponível\n' : '🔴  ----  Reservado\n'}`).join('')}\n • Digite *#inicio* para retornar ao menu inicial ou *#voltar* para voltar ao menu anterior.`;
+      return `Horários pela parte da *${props.status[`PERIOD${props.message.sender.id}`.split('@')[0]] === 'Morning' ? 'manhã' : 'tarde'}*\n${getMessage}\n${props.status[`SERVICE${props.message.sender.id}`.split('@')[0]]}\n\n📝 Para finalizar o agendamento digite a hora e minuto separados por dois-pontos ( *hora:minuto* ).\n\n${hours().map((time, index) => `${emojis[index]}  ${time.slice(0, -3)}  ${ValidateHours(results, time) ? '🟢  ----  Disponível\n' : '🔴  ----  Reservado\n'}`).join('')}\n🔸 Digite *#inicio* para retornar ao menu inicial ou *#voltar* para voltar ao menu anterior.`;
     }
 
-    return `Horários pela parte da *${props.status[`PERIOD${props.message.sender.id}`.split('@')[0]] === 'Morning' ? 'manhã' : 'tarde'}*\n${getMessage}\n${props.status[`SERVICE${props.message.sender.id}`.split('@')[0]]}\n\n 📝 Para finalizar o agendamento digite a hora e minuto separados por dois-pontos ( *hora:minuto* ).\n\n${hours().map((time, index) => {
+    return `Horários pela parte da *${props.status[`PERIOD${props.message.sender.id}`.split('@')[0]] === 'Morning' ? 'manhã' : 'tarde'}*\n${getMessage}\n${props.status[`SERVICE${props.message.sender.id}`.split('@')[0]]}\n\n📝 Para finalizar o agendamento digite a hora e minuto separados por dois-pontos ( *hora:minuto* ).\n\n${hours().map((time, index) => {
       if (ValidateHours(results, time) && ValidateHours(results, indexHours(1, time))) {
         return `${emojis[hours().findIndex((i) => i === time)]}  ${time.slice(0, -3)}  🟢  ----  Disponível\n`;
       }
@@ -86,22 +94,52 @@ export function view(props: TypesViews, results: Array<{ service_time: string }>
       }
 
       return `${emojis[index]}  ${time.slice(0, -3)}  🔴  ----  Reservado\n`;
-    }).join('')}\n • Digite *#inicio* para retornar ao menu inicial ou *#voltar* para voltar ao menu anterior.`;
+    }).join('')}\n🔸 Digite *#inicio* para retornar ao menu inicial ou *#voltar* para voltar ao menu anterior.`;
+  }
+
+  function DeleteView() {
+    const setResults = new Set();
+
+    const filterResults = results.filter((res) => {
+      const duplicatedIdentifier = setResults.has(res.identifier);
+      setResults.add(res.identifier);
+      return !duplicatedIdentifier;
+    });
+
+    if (results.length !== 0) {
+      return `Agendamentos referentes ao telefone:\n*📲 ${String(props.message.sender.id).split('@')[0].substring(2)}*\n\n📝 Para cancelar um agendamento responda com o número do ID.\n\n${filterResults.map((item, index) => {
+        const dateListDelete = new Date(item.service_date);
+        const timeDelete = item.service_time.substring(0, item.service_time.length - 3);
+        const dateListDeleteNow = [
+          AddLeadingZeros(dateListDelete.getDate(), 2),
+          AddLeadingZeros((dateListDelete.getMonth() + 1), 2),
+          String(dateListDelete.getFullYear()).substring(2)];
+
+        // if (String(results[index - 1]?.service_date) === String(item.service_date))
+
+        return `*ID: ${index}*\nNome: ${item.name?.replace(/_/g, ' ')}\nBarbeiro: ${item.employee?.replace(/_/g, ' ')}\nServiço: ${item.service?.replace(/_/g, ' ')}\nData e hora: ${dateListDeleteNow.join('/')} as ${timeDelete}\nIdentificador: ${item.identifier}`;
+      }).join('\n---------------------------------------------------------\n')}\n\n🔸 Digite *#inicio* para retornar ao menu inicial.`;
+    }
+    return '*📒 Nenhum agendamento encontrado.*\n\n🔸 Digite *#inicio* para retornar ao menu inicial.';
   }
 
   return {
     NameView: '💬 Digite seu nome para iniciar o atendimento automático:',
 
-    MainView: `👾 Olá, ${FormatName(props.status[`NAME${props.message.sender.id}`.split('@')[0]])}, seja muito bem-vindo ao atendimento automático.\n\n✌️ *${process.env.BUSINESS}* 💈\n\n 📝 Para agilizar o seu atendimento responda com o número da opção desejada.\n\n 1️⃣ - Horarios e agendamento \n 2️⃣ - Cancelar agendamento \n 0️⃣ - Falar com um atendente \n\n • Para alterar o seu nome de usuario digite *#perfil*.\n\n • Em qualquer momento digite *#sair* para sair do atendimento.`,
+    MainView: `👾 Olá, ${FormatName(props.status[`NAME${props.message.sender.id}`.split('@')[0]])}, seja muito bem-vindo ao atendimento automático.\n\n✌️ *${process.env.BUSINESS}* 💈\n\n📝 Para agilizar o seu atendimento responda com o número da opção desejada.\n\n1️⃣ - Horarios e agendamento \n2️⃣ - Cancelar agendamento \n0️⃣ - Falar com um atendente \n\n🔸 Para alterar o seu nome de usuario digite *#perfil*.\n\n🔸 Em qualquer momento digite *#sair* para sair do atendimento.`,
 
-    ServicesView: `*Escolha o tipo de serviço* \n\n 1️⃣ - ${process.env.ONESERVICE}\n 2️⃣ - ${process.env.TWOSERVICE}\n 3️⃣ - ${process.env.THREESERVICE}\n 4️⃣ - ${process.env.OTRERSERVICE}\n\n • Digite *#inicio* para voltar ao menu principal.`,
+    ServicesView: `*Escolha o tipo de serviço* \n\n1️⃣ - ${process.env.ONESERVICE}\n2️⃣ - ${process.env.TWOSERVICE}\n3️⃣ - ${process.env.THREESERVICE}\n4️⃣ - ${process.env.OTRERSERVICE}\n\n🔸 Digite *#inicio* para voltar ao menu principal.`,
 
-    DateView: `Escolhar um data entre *${getNow.join('/')}* á *${getLimiter.join('/')}* exceto final de semana e feriados. 🗓️\n\n 📝 Digite o dia, mês e ano separados por barra ( *dia/mês/ano* ).\n\n • Digite *#inicio* para retornar ao menu inicial ou *#voltar* para voltar ao menu anterior.`,
+    DateView: `Escolhar um data entre *${getNow.join('/')}* á *${getLimiter.join('/')}* exceto final de semana e feriados. 🗓️\n\n📝 Digite o dia, mês e ano separados por barra ( *dia/mês/ano* ).\n\n🔸 Digite *#inicio* para retornar ao menu inicial ou *#voltar* para voltar ao menu anterior.`,
 
-    PeriodView: 'Selecione o período desejado.\n\n 1️⃣ Período da tarde\n 2️⃣ Período da manhã\n\n • Digite *#inicio* para retornar ao menu inicial ou *#voltar* para voltar ao menu anterior.',
+    PeriodView: 'Selecione o período desejado.\n\n1️⃣ Período da tarde\n2️⃣ Período da manhã\n\n🔸 Digite *#inicio* para retornar ao menu inicial ou *#voltar* para voltar ao menu anterior.',
 
     HourView: HourView(),
 
-    CouponView: `Agendamento concluído com sucesso\n\n${getMessage}\nPeriodo da ${props.status[`PERIOD${props.message.sender.id}`.split('@')[0]] === 'Morning' ? 'manhã' : 'tarde'}\n${props.status[`SERVICE${props.message.sender.id}`.split('@')[0]]}\n\n 1️⃣ - Realizar outro agendamento\n 2️⃣ - Finalizar o atendimento\n\nSeu código de agendamento é\n${props.status[`COUPON${props.message.sender.id}`.split('@')[0]]}`,
+    IdentifierView: `Agendamento concluído com sucesso\n\n${getMessage}\nPeriodo da ${props.status[`PERIOD${props.message.sender.id}`.split('@')[0]] === 'Morning' ? 'manhã' : 'tarde'}\n${props.status[`SERVICE${props.message.sender.id}`.split('@')[0]]}\n\n1️⃣ - Realizar outro agendamento\n2️⃣ - Finalizar o atendimento\n\nSeu código de agendamento é\n${props.status[`identifier${props.message.sender.id}`.split('@')[0]]}`,
+
+    DeleteView: DeleteView(),
+
+    EmployeeView: `*Escolha para qual barbeiro* \n\n1️⃣ - ${process.env.EMPLOYEE1}\n2️⃣ - ${process.env.EMPLOYEE2}\n\n🔸 Digite *#inicio* para retornar ao menu inicial ou *#voltar* para voltar ao menu anterior.`,
   };
 }

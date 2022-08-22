@@ -1,5 +1,4 @@
 import type { TypesViews } from '../models/interfaces';
-// import { status } from '../global/status';
 import { view } from '../messages/views';
 import { alert } from '../messages/alerts';
 

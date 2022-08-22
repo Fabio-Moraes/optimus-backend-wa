@@ -1,30 +1,15 @@
 import type { Client } from '@open-wa/wa-automate';
-// import { status } from '../global/status';
 import 'moment/locale/pt-br';
 
 import { ServicesView } from '../views/ServicesView';
+import { EmployeeView } from '../views/EmployeeView';
 import { PeriodView } from '../views/PeriodView';
+import { IdentifierView } from '../views/IdentifierView';
+import { DeleteView } from '../views/DeleteView';
 import { HourView } from '../views/HourView';
 import { NameView } from '../views/NameView';
 import { DateView } from '../views/DateView';
 import { MainView } from '../views/MainView';
-import { CouponView } from '../views/CouponView';
-
-// interface statusType {
-//   [k: string]: string
-// }
-// status[`USER${message.sender.id}`.split('@')[0]] = `aaaaaaaaaaaa${message.sender.id}`;
-
-// const status: statusType = {
-//   asd: '',
-//   view: 'NameView',
-//   name: '',
-//   service: '',
-//   data: '',
-//   period: '',
-//   coupon: '',
-//   contact: '',
-// };
 
 export function ViewController(client: Client) {
   const status: { [k: string]: string } = {};
@@ -39,6 +24,10 @@ export function ViewController(client: Client) {
         await ServicesView({ client, message, status });
         break;
 
+      case 'EmployeeView':
+        await EmployeeView({ client, message, status });
+        break;
+
       case 'PeriodView':
         await PeriodView({ client, message, status });
         break;
@@ -51,8 +40,12 @@ export function ViewController(client: Client) {
         await HourView({ client, message, status });
         break;
 
-      case 'CouponView':
-        await CouponView({ client, message, status });
+      case 'IdentifierView':
+        await IdentifierView({ client, message, status });
+        break;
+
+      case 'DeleteView':
+        await DeleteView({ client, message, status });
         break;
 
       default:

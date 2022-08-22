@@ -10,6 +10,8 @@ declare global {
       OTRERSERVICE: string;
       AFTERNOON: string;
       MORNING: string;
+      EMPLOYEE1: string;
+      EMPLOYEE2: string;
     }
   }
 }

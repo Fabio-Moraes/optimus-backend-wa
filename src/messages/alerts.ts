@@ -1,9 +1,20 @@
-export function alert() {
-  // const oneDay = (1000 * 60 * 60 * 24);
-  // const now = new Date();
-  // const later = new Date((now.getTime() + (oneDay * 14)));
+import { AddLeadingZeros } from '../components/AddLeadingZeros';
 
-  // const addZero = (value: number) => `0${value}`.toString().slice(-2);
+const defaultResults = {
+  name: '',
+  service: '',
+  employee: '',
+  service_time: '',
+  service_date: '',
+};
+
+export function alert(results = defaultResults) {
+  const dateListDelete = new Date(results.service_date);
+  const timeDelete = results!.service_time.substring(0, results!.service_time.length - 3);
+  const dateListDeleteNow = [
+    AddLeadingZeros(dateListDelete.getDate(), 2),
+    AddLeadingZeros((dateListDelete.getMonth() + 1), 2),
+    String(dateListDelete.getFullYear()).substring(2)];
 
   return {
     OptionsBelow: 'Por favor, escolha uma das opçoes abaixo. 👇️',
@@ -19,5 +30,7 @@ export function alert() {
     Finished: 'Agradecemos por confiar em nosso atendimento. Volte sempre! 🎉🎉',
 
     Cancel: 'Agradecemos pela visita. Volte sempre!',
+
+    Deleted: `*🗑️ Agendamento cancelado.*\n\n~Nome: ${results!.name.replace(/_/g, ' ')}~\n~Barbeiro: ${results!.employee.replace(/_/g, ' ')}~\n~Serviço: ${results!.service.replace(/_/g, ' ')}~\n~Data e hora: ${dateListDeleteNow.join('/')} as ${timeDelete}~`,
   };
 }

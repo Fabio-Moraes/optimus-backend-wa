@@ -7,6 +7,4 @@ export const db = mysql.createPool({
   database: 'heroku_4e63847dfe579bb',
 });
 
-// mysql -h localhost -u root -p
-
 // mysql -h us-cdbr-east-05.cleardb.net -u b6e5116b10a3f3 -p
