@@ -7,7 +7,7 @@ export async function Test(props: TypesViews) {
 
   switch (props.message.body.toLocaleLowerCase()) {
     case 'test':
-      await props.client.sendText(props.message.from, status[`USER${props.message.sender.id}`.split('@')[0]]);
+      await props.client.sendText(props.message.from, '123');
       break;
 
     case 'finalizar':

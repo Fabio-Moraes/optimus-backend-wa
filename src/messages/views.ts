@@ -1,7 +1,8 @@
-import type { TypesViews } from '../models/interfaces';
+import type { TypesViews, TypesSession } from '../models/interfaces';
 import { AddLeadingZeros } from '../components/AddLeadingZeros';
 import { FormatName } from '../components/FormatName';
-import 'dotenv/config';
+
+import sessionJson from '../config/Session.json';
 
 const dayName = [
   'Domingo',
@@ -38,13 +39,15 @@ interface TypeResults {
 }
 
 export function view(props: TypesViews, results: TypeResults[] = []) {
+  const session: TypesSession = JSON.parse(JSON.stringify(sessionJson));
+
   function hours() {
     if (props.status[`PERIOD${props.message.sender.id}`.split('@')[0]] === 'Morning') {
-      return process.env.MORNING.split(', ').map((item) => `${item}:00`);
+      return session.Morning.split(', ').map((item) => `${item}:00`);
     }
 
     if (props.status[`PERIOD${props.message.sender.id}`.split('@')[0]] === 'Afternoon') {
-      return process.env.AFTERNOON.split(', ').map((item) => `${item}:00`);
+      return session.Afternoon.split(', ').map((item) => `${item}:00`);
     }
     return [];
   }
@@ -76,7 +79,7 @@ export function view(props: TypesViews, results: TypeResults[] = []) {
     .filter((item) => String(item))[0]) + value];
 
   function HourView() {
-    if (props.status[`SERVICE${props.message.sender.id}`.split('@')[0]] === process.env.ONESERVICE) {
+    if (props.status[`SERVICE${props.message.sender.id}`.split('@')[0]] === session.Oneservice) {
       return `Horários pela parte da *${props.status[`PERIOD${props.message.sender.id}`.split('@')[0]] === 'Morning' ? 'manhã' : 'tarde'}*\n${getMessage}\n${props.status[`SERVICE${props.message.sender.id}`.split('@')[0]]}\n\n📝 Para finalizar o agendamento digite a hora e minuto separados por dois-pontos ( *hora:minuto* ).\n\n${hours().map((time, index) => `${emojis[index]}  ${time.slice(0, -3)}  ${ValidateHours(results, time) ? '🟢  ----  Disponível\n' : '🔴  ----  Reservado\n'}`).join('')}\n🔸 Digite *#inicio* para retornar ao menu inicial ou *#voltar* para voltar ao menu anterior.`;
     }
 
@@ -117,7 +120,7 @@ export function view(props: TypesViews, results: TypeResults[] = []) {
 
         // if (String(results[index - 1]?.service_date) === String(item.service_date))
 
-        return `*ID: ${index}*\nNome: ${item.name?.replace(/_/g, ' ')}\nBarbeiro: ${item.employee?.replace(/_/g, ' ')}\nServiço: ${item.service?.replace(/_/g, ' ')}\nData e hora: ${dateListDeleteNow.join('/')} as ${timeDelete}\nIdentificador: ${item.identifier}`;
+        return `*ID: ${index}*\nNome: ${item.name?.replace(/_/g, ' ')}\nBarbeiro: ${item.employee?.replace(/_/g, ' ')}\nServiço: ${item.service?.replace(/_/g, ' ')}\nData e hora: ${dateListDeleteNow.join('/')} as ${timeDelete}`;
       }).join('\n---------------------------------------------------------\n')}\n\n🔸 Digite *#inicio* para retornar ao menu inicial.`;
     }
     return '*📒 Nenhum agendamento encontrado.*\n\n🔸 Digite *#inicio* para retornar ao menu inicial.';
@@ -126,9 +129,9 @@ export function view(props: TypesViews, results: TypeResults[] = []) {
   return {
     NameView: '💬 Digite seu nome para iniciar o atendimento automático:',
 
-    MainView: `👾 Olá, ${FormatName(props.status[`NAME${props.message.sender.id}`.split('@')[0]])}, seja muito bem-vindo ao atendimento automático.\n\n✌️ *${process.env.BUSINESS}* 💈\n\n📝 Para agilizar o seu atendimento responda com o número da opção desejada.\n\n1️⃣ - Horarios e agendamento \n2️⃣ - Cancelar agendamento \n0️⃣ - Falar com um atendente \n\n🔸 Para alterar o seu nome de usuario digite *#perfil*.\n\n🔸 Em qualquer momento digite *#sair* para sair do atendimento.`,
+    MainView: `👾 Olá, ${FormatName(props.status[`NAME${props.message.sender.id}`.split('@')[0]])}, seja muito bem-vindo ao atendimento automático.\n\n✌️ *${session.Business}* 💈\n\n📝 Para agilizar o seu atendimento responda com o número da opção desejada.\n\n1️⃣ - Horarios e agendamento \n2️⃣ - Cancelar agendamento \n0️⃣ - Falar com um atendente \n\n🔸 Para alterar o seu nome de usuario digite *#perfil*.\n\n🔸 Em qualquer momento digite *#sair* para sair do atendimento.`,
 
-    ServicesView: `*Escolha o tipo de serviço* \n\n1️⃣ - ${process.env.ONESERVICE}\n2️⃣ - ${process.env.TWOSERVICE}\n3️⃣ - ${process.env.THREESERVICE}\n4️⃣ - ${process.env.OTRERSERVICE}\n\n🔸 Digite *#inicio* para voltar ao menu principal.`,
+    ServicesView: `*Escolha o tipo de serviço* \n\n1️⃣ - ${session.Oneservice}\n2️⃣ - ${session.Twoservice}\n3️⃣ - ${session.Threeservice}\n4️⃣ - ${session.Otrerservice}\n\n🔸 Digite *#inicio* para voltar ao menu principal.`,
 
     DateView: `Escolhar um data entre *${getNow.join('/')}* á *${getLimiter.join('/')}* exceto final de semana e feriados. 🗓️\n\n📝 Digite o dia, mês e ano separados por barra ( *dia/mês/ano* ).\n\n🔸 Digite *#inicio* para retornar ao menu inicial ou *#voltar* para voltar ao menu anterior.`,
 
@@ -140,6 +143,6 @@ export function view(props: TypesViews, results: TypeResults[] = []) {
 
     DeleteView: DeleteView(),
 
-    EmployeeView: `*Escolha para qual barbeiro* \n\n1️⃣ - ${process.env.EMPLOYEE1}\n2️⃣ - ${process.env.EMPLOYEE2}\n\n🔸 Digite *#inicio* para retornar ao menu inicial ou *#voltar* para voltar ao menu anterior.`,
+    EmployeeView: `*Escolha para qual barbeiro* \n\n1️⃣ - ${session.Employee1}\n2️⃣ - ${session.Employee2}\n\n🔸 Digite *#inicio* para retornar ao menu inicial ou *#voltar* para voltar ao menu anterior.`,
   };
 }

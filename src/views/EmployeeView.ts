@@ -1,23 +1,25 @@
-import type { TypesViews } from '../models/interfaces';
+import type { TypesViews, TypesSession } from '../models/interfaces';
 import { CleanStatus } from '../components/CleanStatus';
-import 'dotenv/config';
 
 import { alert } from '../messages/alerts';
 import { view } from '../messages/views';
 
+import sessionJson from '../config/Session.json';
+
 export async function EmployeeView(props: TypesViews) {
+  const session: TypesSession = JSON.parse(JSON.stringify(sessionJson));
   const { status } = props;
 
   switch (props.message.body.toLowerCase()) {
     case '1':
-      status[`EMPLOYEE${props.message.sender.id}`.split('@')[0]] = process.env.EMPLOYEE1;
+      status[`EMPLOYEE${props.message.sender.id}`.split('@')[0]] = session.Employee1;
       status[`VIEW${props.message.sender.id}`.split('@')[0]] = 'DateView';
       await props.client
         .sendText(props.message.from, view(props).DateView);
       break;
 
     case '2':
-      status[`EMPLOYEE${props.message.sender.id}`.split('@')[0]] = process.env.EMPLOYEE2;
+      status[`EMPLOYEE${props.message.sender.id}`.split('@')[0]] = session.Employee2;
       status[`VIEW${props.message.sender.id}`.split('@')[0]] = 'DateView';
       await props.client
         .sendText(props.message.from, view(props).DateView);

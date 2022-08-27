@@ -1,18 +1,21 @@
-import type { TypesViews } from '../models/interfaces';
+import type { TypesViews, TypesSession } from '../models/interfaces';
 
 import { view } from '../messages/views';
 import { alert } from '../messages/alerts';
 import { Test } from '../views/TestView';
 import { db } from '../database/connect';
 
+import sessionJson from '../config/Session.json';
+
 export async function MainView(props: TypesViews) {
+  const session: TypesSession = JSON.parse(JSON.stringify(sessionJson));
   const { status } = props;
 
-  const business = process.env.BUSINESS.replace(/ /g, '_').toLowerCase();
+  const business = session.Business.replace(/ /g, '_').toLowerCase();
   const phone = String(props.message.sender.id);
 
   const selectValues = [business, phone];
-  const select = 'SELECT name, employee, identifier, service, service_date, service_time FROM optimus WHERE business = ? AND phone = ?';
+  const select = 'SELECT name, identifier, employee, service, service_date, service_time FROM optimus WHERE business = ? AND phone = ?';
 
   switch (props.message.body.toLocaleLowerCase()) {
     case '1':
@@ -27,12 +30,6 @@ export async function MainView(props: TypesViews) {
         if (error) props.client.sendText(props.message.from, alert().FailConnect);
         props.client.sendText(props.message.from, view(props, results).DeleteView);
       });
-      break;
-
-    case '3':
-      break;
-
-    case '4':
       break;
 
     case '0':

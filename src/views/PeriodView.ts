@@ -1,14 +1,17 @@
-import type { TypesViews } from '../models/interfaces';
+import type { TypesViews, TypesSession } from '../models/interfaces';
 import { CleanStatus } from '../components/CleanStatus';
 
 import { alert } from '../messages/alerts';
 import { view } from '../messages/views';
 import { db } from '../database/connect';
 
+import sessionJson from '../config/Session.json';
+
 export async function PeriodView(props: TypesViews) {
+  const session: TypesSession = JSON.parse(JSON.stringify(sessionJson));
   const { status } = props;
 
-  const business = process.env.BUSINESS.replace(/ /g, '_').toLowerCase();
+  const business = session.Business.replace(/ /g, '_').toLowerCase();
   const service_date = status[`DATE${props.message.sender.id}`.split('@')[0]].replace(/\//g, '-');
 
   const employee = status[`EMPLOYEE${props.message.sender.id}`.split('@')[0]]

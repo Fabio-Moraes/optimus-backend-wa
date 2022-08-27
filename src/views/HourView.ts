@@ -1,5 +1,5 @@
 import { GenerateIdentifier } from '../components/GenerateIdentifier';
-import type { TypesViews } from '../models/interfaces';
+import type { TypesViews, TypesSession } from '../models/interfaces';
 import { AddLeadingZeros } from '../components/AddLeadingZeros';
 import { CleanStatus } from '../components/CleanStatus';
 
@@ -7,7 +7,7 @@ import { alert } from '../messages/alerts';
 import { view } from '../messages/views';
 import { db } from '../database/connect';
 
-import 'dotenv/config';
+import sessionJson from '../config/Session.json';
 
 function parseHours(input: string) {
   const regexExp = /^([0-1]?[0-9]|2[0-3])(:)([0-5][0-9])$/gi;
@@ -15,15 +15,16 @@ function parseHours(input: string) {
 }
 
 export async function HourView(props: TypesViews) {
+  const session: TypesSession = JSON.parse(JSON.stringify(sessionJson));
   const { status } = props;
 
   function hours() {
     if (status[`PERIOD${props.message.sender.id}`.split('@')[0]] === 'Morning') {
-      return process.env.MORNING.split(', ').map((item) => `${item}:00`);
+      return session.Morning.split(', ').map((item) => `${item}:00`);
     }
 
     if (status[`PERIOD${props.message.sender.id}`.split('@')[0]] === 'Afternoon') {
-      return process.env.AFTERNOON.split(', ').map((item) => `${item}:00`);
+      return session.Afternoon.split(', ').map((item) => `${item}:00`);
     }
     return [];
   }
@@ -34,7 +35,7 @@ export async function HourView(props: TypesViews) {
     AddLeadingZeros(splitHours[1], 2),
     '00'];
 
-  const business = process.env.BUSINESS.toLowerCase().replace(/ /g, '_');
+  const business = session.Business.toLowerCase().replace(/ /g, '_');
   const name = status[`NAME${props.message.sender.id}`.split('@')[0]].replace(/ /g, '_');
   const phone = String(props.message.sender.id);
   const identifier = GenerateIdentifier(4);

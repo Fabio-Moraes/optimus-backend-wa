@@ -1,10 +1,12 @@
-import type { TypesViews } from '../models/interfaces';
+import type { TypesViews, TypesSession } from '../models/interfaces';
 import { AddLeadingZeros } from '../components/AddLeadingZeros';
 import { CleanStatus } from '../components/CleanStatus';
 
 import { alert } from '../messages/alerts';
 import { view } from '../messages/views';
 import { db } from '../database/connect';
+
+import sessionJson from '../config/Session.json';
 
 interface TypeResults {
   name: string;
@@ -16,9 +18,10 @@ interface TypeResults {
 }
 
 export async function DeleteView(props: TypesViews) {
+  const session: TypesSession = JSON.parse(JSON.stringify(sessionJson));
   const { status } = props;
 
-  const business = process.env.BUSINESS.replace(/ /g, '_').toLowerCase();
+  const business = session.Business.replace(/ /g, '_').toLowerCase();
   const phone = String(props.message.sender.id);
   // const phone = '554192626233@c.us';
 

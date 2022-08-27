@@ -1,37 +1,39 @@
-import type { TypesViews } from '../models/interfaces';
+import type { TypesViews, TypesSession } from '../models/interfaces';
 import { CleanStatus } from '../components/CleanStatus';
-import 'dotenv/config';
 
 import { alert } from '../messages/alerts';
 import { view } from '../messages/views';
 
+import sessionJson from '../config/Session.json';
+
 export async function ServicesView(props: TypesViews) {
+  const session: TypesSession = JSON.parse(JSON.stringify(sessionJson));
   const { status } = props;
 
   switch (props.message.body.toLowerCase()) {
     case '1':
-      status[`SERVICE${props.message.sender.id}`.split('@')[0]] = process.env.ONESERVICE;
+      status[`SERVICE${props.message.sender.id}`.split('@')[0]] = session.Oneservice;
       status[`VIEW${props.message.sender.id}`.split('@')[0]] = 'EmployeeView';
       await props.client
         .sendText(props.message.from, view(props).EmployeeView);
       break;
 
     case '2':
-      status[`SERVICE${props.message.sender.id}`.split('@')[0]] = process.env.TWOSERVICE;
+      status[`SERVICE${props.message.sender.id}`.split('@')[0]] = session.Twoservice;
       status[`VIEW${props.message.sender.id}`.split('@')[0]] = 'EmployeeView';
       await props.client
         .sendText(props.message.from, view(props).EmployeeView);
       break;
 
     case '3':
-      status[`SERVICE${props.message.sender.id}`.split('@')[0]] = process.env.THREESERVICE;
+      status[`SERVICE${props.message.sender.id}`.split('@')[0]] = session.Threeservice;
       status[`VIEW${props.message.sender.id}`.split('@')[0]] = 'EmployeeView';
       await props.client
         .sendText(props.message.from, view(props).EmployeeView);
       break;
 
     case '4':
-      status[`SERVICE${props.message.sender.id}`.split('@')[0]] = process.env.OTRERSERVICE;
+      status[`SERVICE${props.message.sender.id}`.split('@')[0]] = session.Otrerservice;
       await props.client
         .sendText(props.message.from, view(props).EmployeeView)
         .then(() => {
