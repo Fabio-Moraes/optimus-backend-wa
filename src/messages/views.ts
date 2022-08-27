@@ -1,3 +1,4 @@
+import moment from 'moment';
 import type { TypesViews, TypesSession } from '../models/interfaces';
 import { AddLeadingZeros } from '../components/AddLeadingZeros';
 import { FormatName } from '../components/FormatName';
@@ -57,15 +58,8 @@ export function view(props: TypesViews, results: TypeResults[] = []) {
   const limiter = new Date((date.getTime() + (oneDay * 14)));
   const message = new Date(props.status[`DATE${props.message.sender.id}`.split('@')[0]]);
 
-  const getNow = [
-    AddLeadingZeros(date.getDate(), 2),
-    AddLeadingZeros((date.getMonth() + 1), 2),
-    String(date.getFullYear()).substring(2)];
-
-  const getLimiter = [
-    AddLeadingZeros(limiter.getDate(), 2),
-    AddLeadingZeros((limiter.getMonth() + 1), 2),
-    String(limiter.getFullYear()).substring(2)];
+  const getNow = moment.utc(date).format('DD/MM/YY');
+  const getLimiter = moment.utc(limiter).format('DD/MM/YY');
 
   const getMessage = `${dayName[message.getDay()]}, ${message.getDate()} de ${monName[message.getMonth()]} de ${message.getFullYear()}`;
 
@@ -133,7 +127,7 @@ export function view(props: TypesViews, results: TypeResults[] = []) {
 
     ServicesView: `*Escolha o tipo de serviço* \n\n1️⃣ - ${session.Oneservice}\n2️⃣ - ${session.Twoservice}\n3️⃣ - ${session.Threeservice}\n4️⃣ - ${session.Otrerservice}\n\n🔸 Digite *#inicio* para voltar ao menu principal.`,
 
-    DateView: `Escolhar um data entre *${getNow.join('/')}* á *${getLimiter.join('/')}* exceto final de semana e feriados. 🗓️\n\n📝 Digite o dia, mês e ano separados por barra ( *dia/mês/ano* ).\n\n🔸 Digite *#inicio* para retornar ao menu inicial ou *#voltar* para voltar ao menu anterior.`,
+    DateView: `Escolhar um data entre *${getNow}* á *${getLimiter}* exceto final de semana e feriados. 🗓️\n\n📝 Digite o dia, mês e ano separados por barra ( *dia/mês/ano* ).\n\n🔸 Digite *#inicio* para retornar ao menu inicial ou *#voltar* para voltar ao menu anterior.`,
 
     PeriodView: 'Selecione o período desejado.\n\n1️⃣ Período da tarde\n2️⃣ Período da manhã\n\n🔸 Digite *#inicio* para retornar ao menu inicial ou *#voltar* para voltar ao menu anterior.',
 

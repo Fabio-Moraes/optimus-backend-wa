@@ -1,5 +1,5 @@
+import moment from 'moment';
 import type { TypesViews, TypesSession } from '../models/interfaces';
-import { AddLeadingZeros } from '../components/AddLeadingZeros';
 import { CleanStatus } from '../components/CleanStatus';
 
 import { alert } from '../messages/alerts';
@@ -78,13 +78,11 @@ export async function DeleteView(props: TypesViews) {
             name, employee, service, service_date, service_time,
           };
 
-          const dateListDelete = new Date(service_date);
-          const dateListDeleteNow = [
-            String(dateListDelete.getFullYear()),
-            AddLeadingZeros((dateListDelete.getMonth() + 1), 2),
-            AddLeadingZeros(dateListDelete.getDate(), 2)];
+          const dateListDeleteNow = moment.utc(service_date).format('YYYY/MM/DD');
 
-          const deleteSqlValues = [employee, service, phone, business, dateListDeleteNow.join('-'), identifier];
+          const deleteSqlValues = [
+            employee, service, phone, business, dateListDeleteNow, identifier];
+
           const deleteSql = 'DELETE FROM optimus WHERE employee = ? AND service = ? AND phone = ? AND business = ? AND service_date = ? AND identifier = ?;';
 
           if (Number(props.message.body) < results.length && Number(props.message.body) >= 0) {

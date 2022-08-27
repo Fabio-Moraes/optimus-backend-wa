@@ -1,4 +1,4 @@
-import { AddLeadingZeros } from '../components/AddLeadingZeros';
+import moment from 'moment';
 
 const defaultResults = {
   name: '',
@@ -9,13 +9,8 @@ const defaultResults = {
 };
 
 export function alert(results = defaultResults) {
-  const dateListDelete = new Date(results.service_date);
   const timeDelete = results!.service_time.substring(0, results!.service_time.length - 3);
-  const dateListDeleteNow = [
-    AddLeadingZeros(dateListDelete.getDate(), 2),
-    AddLeadingZeros((dateListDelete.getMonth() + 1), 2),
-    String(dateListDelete.getFullYear()).substring(2)];
-
+  const dateListDeleteNow = moment.utc(results.service_date).format('DD/MM/YY');
   return {
     OptionsBelow: 'Por favor, escolha uma das opçoes abaixo. 👇️',
 
@@ -31,6 +26,6 @@ export function alert(results = defaultResults) {
 
     Cancel: 'Agradecemos pela visita. Volte sempre!',
 
-    Deleted: `*🗑️ Agendamento cancelado.*\n\n~Nome: ${results!.name.replace(/_/g, ' ')}~\n~Barbeiro: ${results!.employee.replace(/_/g, ' ')}~\n~Serviço: ${results!.service.replace(/_/g, ' ')}~\n~Data e hora: ${dateListDeleteNow.join('/')} as ${timeDelete}~`,
+    Deleted: `*🗑️ Agendamento cancelado.*\n\n~Nome: ${results!.name.replace(/_/g, ' ')}~\n~Barbeiro: ${results!.employee.replace(/_/g, ' ')}~\n~Serviço: ${results!.service.replace(/_/g, ' ')}~\n~Data e hora: ${dateListDeleteNow} as ${timeDelete}~`,
   };
 }
