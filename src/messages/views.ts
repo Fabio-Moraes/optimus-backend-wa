@@ -117,6 +117,7 @@ export function view(props: TypesViews, results: TypeResults[] = []) {
         return `*ID: ${index}*\nNome: ${item.name?.replace(/_/g, ' ')}\nBarbeiro: ${item.employee?.replace(/_/g, ' ')}\nServiço: ${item.service?.replace(/_/g, ' ')}\nData e hora: ${dateListDeleteNow.join('/')} as ${timeDelete}`;
       }).join('\n---------------------------------------------------------\n')}\n\n🔸 Digite *#inicio* para retornar ao menu inicial.`;
     }
+
     return '*📒 Nenhum agendamento encontrado.*\n\n🔸 Digite *#inicio* para retornar ao menu inicial.';
   }
 

@@ -152,5 +152,3 @@ export async function HourView(props: TypesViews) {
       break;
   }
 }
-
-// .replace(/(\/)|(\s)/g, '_').toLowerCase() || Aaaa e Aaaa/Aaaa >>  aaaa_a_aaaa ||;

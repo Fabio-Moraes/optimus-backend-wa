@@ -55,7 +55,7 @@ export async function DeleteView(props: TypesViews) {
 
         if (error) {
           props.client.sendText(props.message.from, alert().FailConnect);
-        } else {
+        } else if (results.length > 0) {
           const { service_time } = filterResults
             .filter((i, index) => index === Number(props.message.body))[0];
 
@@ -107,7 +107,7 @@ export async function DeleteView(props: TypesViews) {
               props.client.sendText(props.message.from, view(props, subResults).DeleteView);
             });
           }
-        }
+        } else { props.client.sendText(props.message.from, view(props).DeleteView); }
       });
       break;
   }
