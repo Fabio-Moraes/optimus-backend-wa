@@ -18,9 +18,11 @@ export function alert(results = defaultResults) {
 
     InvalidDate: 'A data escolhida não está dentro do prazo, por favor, siga os seguintes passos. 👇️',
 
-    FailConnect: 'ERRO! Não foi possível comunicar com o servidor. Por favor, tente novamente mais tarde',
+    FailConnect: 'Não foi possível comunicar com o servidor. Por favor, tente novamente em alguns instantes',
 
     TimeNotAvailable: 'Já está agendado, por favor, escolha um outro horario',
+
+    TimeNotExpired: 'Não está dentro do prazo, por favor, escolha um horário disponivel',
 
     Finished: 'Agradecemos por confiar em nosso atendimento. Volte sempre! 🎉🎉',
 

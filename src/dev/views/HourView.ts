@@ -1,3 +1,4 @@
+import moment from 'moment';
 import { GenerateIdentifier } from '../components/GenerateIdentifier';
 import type { TypesViews, TypesSession } from '../models/interfaces';
 import { AddLeadingZeros } from '../components/AddLeadingZeros';
@@ -66,6 +67,7 @@ export async function HourView(props: TypesViews) {
 
   const insertValues = [
     business, employee, name, phone, service, identifier, service_date, service_time];
+
   const insert = 'INSERT INTO optimus SET business = ?, employee = ?, name = ?, phone = ?, service = ?, identifier = ?, service_date = ?, service_time = ?;';
 
   const dualInsertValues = (results: Array<{ service_time: string }>) => {
@@ -80,7 +82,20 @@ export async function HourView(props: TypesViews) {
     }
     return [];
   };
+
   const dualInsert = 'INSERT INTO optimus (business, employee, name, phone, service, identifier, service_date, service_time) VALUES(?,?,?,?,?,?,?,?), (?,?,?,?,?,?,?,?);';
+
+  function isWithinTime(end: string) {
+    const now = moment().format('HH:mm');
+    if (now.toString() >= end) return true;
+    return false;
+  }
+
+  function isWithinDate(end: string) {
+    const now = moment().format('YYYY-MM-DD');
+    if (end === now.toString()) return true;
+    return false;
+  }
 
   switch (props.message.body.toLowerCase()) {
     case '#inicio':
@@ -97,54 +112,49 @@ export async function HourView(props: TypesViews) {
       status[`NAME${props.message.sender.id}`.split('@')[0]] = '';
       status[`VIEW${props.message.sender.id}`.split('@')[0]] = '';
       CleanStatus(props);
-      await props.client
-        .sendText(props.message.from, alert().Cancel);
+      await props.client.sendText(props.message.from, alert().Cancel);
       break;
 
     default:
       db.query(select, selectValues, (errorSelect, results) => {
         if (errorSelect) {
-          props.client.sendText(props.message.from, `${errorSelect}0`);
+          // props.client.sendText(props.message.from, 'err-0');
           props.client.sendText(props.message.from, alert().FailConnect);
-          props.client.sendText(props.message.from, view(results).HourView);
-        }
-
-        if (hours().includes(inputHours.join(':'))) {
-          if (errorSelect) {
-            props.client.sendText(props.message.from, alert().FailConnect);
-            props.client.sendText(props.message.from, view(results).HourView);
-          }
-
-          if (service === 'corte_de_cabelo') {
+          props.client.sendText(props.message.from, view(props, results).HourView);
+        } else if (hours().includes(inputHours.join(':'))) {
+          if (isWithinDate(service_date) && isWithinTime(service_time)) {
+            props.client.sendText(props.message.from, 'horario do dia não disponivel');
+          } else if (service === 'corte_de_cabelo') {
             if (ValidateHours(results, service_time)) {
               db.query(insert, insertValues, (errorInsert) => {
                 if (errorInsert) {
-                  props.client.sendText(props.message.from, `${errorSelect}1`);
+                  // props.client.sendText(props.message.from, 'err-1');
                   props.client.sendText(props.message.from, alert().FailConnect);
-                  props.client.sendText(props.message.from, view(results).HourView);
+                  props.client.sendText(props.message.from, view(props, results).HourView);
+                } else {
+                  status[`identifier${props.message.sender.id}`.split('@')[0]] = identifier;
+                  status[`VIEW${props.message.sender.id}`.split('@')[0]] = 'IdentifierView';
+                  props.client.sendText(props.message.from, view(props).IdentifierView);
                 }
-                status[`identifier${props.message.sender.id}`.split('@')[0]] = identifier;
-                status[`VIEW${props.message.sender.id}`.split('@')[0]] = 'IdentifierView';
-                props.client.sendText(props.message.from, view(props).IdentifierView);
               });
             } else props.client.sendText(props.message.from, alert().TimeNotAvailable);
           } else if (ValidateHours(results, service_time)) {
-            if (ValidateHours(results, indexHours(1))
-              || ValidateHours(results, indexHours(-1))) {
+            if (ValidateHours(results, indexHours(1)) || ValidateHours(results, indexHours(-1))) {
               db.query(dualInsert, dualInsertValues(results), (errorInsert) => {
                 if (errorInsert) {
-                  props.client.sendText(props.message.from, `${errorSelect}2`);
+                  // props.client.sendText(props.message.from, 'err-2');
                   props.client.sendText(props.message.from, alert().FailConnect);
                   props.client.sendText(props.message.from, view(props, results).HourView);
+                } else {
+                  status[`identifier${props.message.sender.id}`.split('@')[0]] = identifier;
+                  status[`VIEW${props.message.sender.id}`.split('@')[0]] = 'IdentifierView';
+                  props.client.sendText(props.message.from, view(props).IdentifierView);
                 }
-                status[`identifier${props.message.sender.id}`.split('@')[0]] = identifier;
-                status[`VIEW${props.message.sender.id}`.split('@')[0]] = 'IdentifierView';
-                props.client.sendText(props.message.from, view(props).IdentifierView);
               });
             } else props.client.sendText(props.message.from, alert().TimeNotAvailable);
           } else props.client.sendText(props.message.from, alert().TimeNotAvailable);
         } else {
-          props.client.sendText(props.message.from, `${errorSelect}3`);
+          // props.client.sendText(props.message.from, 'err-3');
           props.client.sendText(props.message.from, alert().InvalidTextFormat);
           props.client.sendText(props.message.from, view(props, results).HourView);
         }

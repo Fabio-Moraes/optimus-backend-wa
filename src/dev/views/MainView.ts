@@ -1,8 +1,9 @@
+import moment from 'moment';
 import type { TypesViews, TypesSession } from '../models/interfaces';
 
 import { view } from '../messages/views';
 import { alert } from '../messages/alerts';
-import { Test } from '../views/TestView';
+// import { Test } from '../views/TestView';
 import { db } from '../database/connect';
 
 import sessionJson from '../config/Session.json';
@@ -14,7 +15,12 @@ export async function MainView(props: TypesViews) {
   const business = session.Business.replace(/ /g, '_').toLowerCase();
   const phone = String(props.message.sender.id);
 
+  const now = moment.utc().format('YYYY-MM-DD');
+  const checkDate = (date: { service_date: string }) => moment
+    .utc(date.service_date).valueOf() < moment.utc().valueOf();
+
   const selectValues = [business, phone];
+  const deleteDate = 'DELETE FROM optimus WHERE service_date < ?;';
   const select = 'SELECT name, identifier, employee, service, service_date, service_time FROM optimus WHERE business = ? AND phone = ?';
 
   switch (props.message.body.toLocaleLowerCase()) {
@@ -27,8 +33,17 @@ export async function MainView(props: TypesViews) {
     case '2':
       status[`VIEW${props.message.sender.id}`.split('@')[0]] = 'DeleteView';
       db.query(select, selectValues, (error, results) => {
-        if (error) props.client.sendText(props.message.from, alert().FailConnect);
-        props.client.sendText(props.message.from, view(props, results).DeleteView);
+        if (error) {
+          props.client.sendText(props.message.from, alert().FailConnect);
+        } else if (results.some(checkDate)) {
+          db.query(deleteDate, [now], (err) => {
+            if (err) {
+              props.client.sendText(props.message.from, alert().FailConnect);
+            } else {
+              props.client.sendText(props.message.from, view(props, results).DeleteView);
+            }
+          });
+        } else props.client.sendText(props.message.from, view(props, results).DeleteView);
       });
       break;
 
@@ -45,9 +60,12 @@ export async function MainView(props: TypesViews) {
       break;
 
     default:
-      // if (status.name === '') status.name = props.message.body;
-      // await props.client.sendText(props.message.from, view().MainView);
-      Test(props);
+      if (status[`NAME${props.message.sender.id}`.split('@')[0]] === ''
+        || !status[`NAME${props.message.sender.id}`.split('@')[0]]) {
+        status[`NAME${props.message.sender.id}`.split('@')[0]] = props.message.body;
+      }
+      await props.client.sendText(props.message.from, view(props).MainView);
+      // Test(props);
       break;
   }
 }

@@ -41,13 +41,14 @@ interface TypeResults {
 
 export function view(props: TypesViews, results: TypeResults[] = []) {
   const session: TypesSession = JSON.parse(JSON.stringify(sessionJson));
+  const { status } = props;
 
   function hours() {
-    if (props.status[`PERIOD${props.message.sender.id}`.split('@')[0]] === 'Morning') {
+    if (status[`PERIOD${props.message.sender.id}`.split('@')[0]] === 'Morning') {
       return session.Morning.split(', ').map((item) => `${item}:00`);
     }
 
-    if (props.status[`PERIOD${props.message.sender.id}`.split('@')[0]] === 'Afternoon') {
+    if (status[`PERIOD${props.message.sender.id}`.split('@')[0]] === 'Afternoon') {
       return session.Afternoon.split(', ').map((item) => `${item}:00`);
     }
     return [];
@@ -56,7 +57,8 @@ export function view(props: TypesViews, results: TypeResults[] = []) {
   const oneDay = (1000 * 60 * 60 * 24);
   const date = new Date();
   const limiter = new Date((date.getTime() + (oneDay * 14)));
-  const message = new Date(props.status[`DATE${props.message.sender.id}`.split('@')[0]]);
+  const message = new Date(status[`DATE${props.message.sender.id}`.split('@')[0]]);
+  const service_date = status[`DATE${props.message.sender.id}`.split('@')[0]];
 
   const getNow = moment.utc(date).format('DD/MM/YY');
   const getLimiter = moment.utc(limiter).format('DD/MM/YY');
@@ -72,12 +74,36 @@ export function view(props: TypesViews, results: TypeResults[] = []) {
     .map((item, index) => (item === time ? index : ''))
     .filter((item) => String(item))[0]) + value];
 
+  function isWithinTime(end: string) {
+    const now = moment().format('HH:mm');
+
+    if (now.toString() >= end) return true;
+    return false;
+  }
+
+  function isWithinDate(end: string) {
+    const now = moment().format('YYYY/MM/DD');
+
+    if (end === now.toString()) return true;
+    return false;
+  }
+
   function HourView() {
-    if (props.status[`SERVICE${props.message.sender.id}`.split('@')[0]] === session.Oneservice) {
-      return `Horários pela parte da *${props.status[`PERIOD${props.message.sender.id}`.split('@')[0]] === 'Morning' ? 'manhã' : 'tarde'}*\n${getMessage}\n${props.status[`SERVICE${props.message.sender.id}`.split('@')[0]]}\n\n📝 Para finalizar o agendamento digite a hora e minuto separados por dois-pontos ( *hora:minuto* ).\n\n${hours().map((time, index) => `${emojis[index]}  ${time.slice(0, -3)}  ${ValidateHours(results, time) ? '🟢  ----  Disponível\n' : '🔴  ----  Reservado\n'}`).join('')}\n🔸 Digite *#inicio* para retornar ao menu inicial ou *#voltar* para voltar ao menu anterior.`;
+    if (status[`SERVICE${props.message.sender.id}`.split('@')[0]] === session.Oneservice) {
+      return `Horários pela parte da *${status[`PERIOD${props.message.sender.id}`.split('@')[0]] === 'Morning' ? 'manhã' : 'tarde'}*\n${getMessage}\n${status[`SERVICE${props.message.sender.id}`.split('@')[0]]}\n\n📝 Para finalizar o agendamento digite a hora e minuto separados por dois-pontos ( *hora:minuto* ).\n\n${hours().map((time, index) => {
+        if (isWithinTime(time.slice(0, -3)) && isWithinDate(service_date)) {
+          return `${emojis[index]}  ${time.slice(0, -3)}  🔴  ----  Reservado\n`;
+        }
+
+        return `${emojis[index]}  ${time.slice(0, -3)}  ${ValidateHours(results, time) ? '🟢  ----  Disponível\n' : '🔴  ----  Reservado\n'}`;
+      }).join('')}\n🔸 Digite *#inicio* para retornar ao menu inicial ou *#voltar* para voltar ao menu anterior.`;
     }
 
-    return `Horários pela parte da *${props.status[`PERIOD${props.message.sender.id}`.split('@')[0]] === 'Morning' ? 'manhã' : 'tarde'}*\n${getMessage}\n${props.status[`SERVICE${props.message.sender.id}`.split('@')[0]]}\n\n📝 Para finalizar o agendamento digite a hora e minuto separados por dois-pontos ( *hora:minuto* ).\n\n${hours().map((time, index) => {
+    return `Horários pela parte da *${status[`PERIOD${props.message.sender.id}`.split('@')[0]] === 'Morning' ? 'manhã' : 'tarde'}*\n${getMessage}\n${status[`SERVICE${props.message.sender.id}`.split('@')[0]]}\n\n📝 Para finalizar o agendamento digite a hora e minuto separados por dois-pontos ( *hora:minuto* ).\n\n${hours().map((time, index) => {
+      if (isWithinTime(time.slice(0, -3)) && isWithinDate(service_date)) {
+        return `${emojis[index]}  ${time.slice(0, -3)}  🔴  ----  Reservado\n`;
+      }
+
       if (ValidateHours(results, time) && ValidateHours(results, indexHours(1, time))) {
         return `${emojis[hours().findIndex((i) => i === time)]}  ${time.slice(0, -3)}  🟢  ----  Disponível\n`;
       }
@@ -124,7 +150,7 @@ export function view(props: TypesViews, results: TypeResults[] = []) {
   return {
     NameView: '💬 Digite seu nome para iniciar o atendimento automático:',
 
-    MainView: `👾 Olá, ${FormatName(props.status[`NAME${props.message.sender.id}`.split('@')[0]])}, seja muito bem-vindo ao atendimento automático.\n\n✌️ *${session.Business}* 💈\n\n📝 Para agilizar o seu atendimento responda com o número da opção desejada.\n\n1️⃣ - Horarios e agendamento \n2️⃣ - Cancelar agendamento \n0️⃣ - Falar com um atendente \n\n🔸 Para alterar o seu nome de usuario digite *#perfil*.\n\n🔸 Em qualquer momento digite *#sair* para sair do atendimento.`,
+    MainView: `👾 Olá, ${FormatName(status[`NAME${props.message.sender.id}`.split('@')[0]])}, seja muito bem-vindo ao atendimento automático.\n\n✌️ *${session.Business}* 💈\n\n📝 Para agilizar o seu atendimento responda com o número da opção desejada.\n\n1️⃣ - Horarios e agendamento \n2️⃣ - Cancelar agendamento \n0️⃣ - Falar com um atendente \n\n🔸 Para alterar o seu nome de usuario digite *#perfil*.\n\n🔸 Em qualquer momento digite *#sair* para sair do atendimento.`,
 
     ServicesView: `*Escolha o tipo de serviço* \n\n1️⃣ - ${session.Oneservice}\n2️⃣ - ${session.Twoservice}\n3️⃣ - ${session.Threeservice}\n4️⃣ - ${session.Otrerservice}\n\n🔸 Digite *#inicio* para voltar ao menu principal.`,
 
@@ -134,7 +160,7 @@ export function view(props: TypesViews, results: TypeResults[] = []) {
 
     HourView: HourView(),
 
-    IdentifierView: `Agendamento concluído com sucesso\n\n${getMessage}\nPeriodo da ${props.status[`PERIOD${props.message.sender.id}`.split('@')[0]] === 'Morning' ? 'manhã' : 'tarde'}\n${props.status[`SERVICE${props.message.sender.id}`.split('@')[0]]}\n\n1️⃣ - Realizar outro agendamento\n2️⃣ - Finalizar o atendimento\n\nSeu código de agendamento é\n${props.status[`identifier${props.message.sender.id}`.split('@')[0]]}`,
+    IdentifierView: `Agendamento concluído com sucesso\n\n${getMessage}\nPeriodo da ${status[`PERIOD${props.message.sender.id}`.split('@')[0]] === 'Morning' ? 'manhã' : 'tarde'}\n${status[`SERVICE${props.message.sender.id}`.split('@')[0]]}\n\n1️⃣ - Realizar outro agendamento\n2️⃣ - Finalizar o atendimento\n\nSeu código de agendamento é\n${status[`identifier${props.message.sender.id}`.split('@')[0]]}`,
 
     DeleteView: DeleteView(),
 
