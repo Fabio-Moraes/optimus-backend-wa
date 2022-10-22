@@ -14,7 +14,7 @@ app.use(express_1.default.json());
 class Server {
     constructor() {
         (0, wa_automate_1.create)({
-            sessionId: 'james_barbearia',
+            sessionId: 'barbearia_greenville',
             multiDevice: true,
             disableSpins: true,
             headless: true,

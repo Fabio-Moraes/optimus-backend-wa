@@ -23,10 +23,12 @@
     "baseUrl": "."
   },
   "exclude": [
+
     "node_modules",
     "*.config.ts",
+    "*.zip",
     "./**/*.spec.ts",
     "./**/dist",
-    "./**/deploy"
+    "./**/deploy",
   ]
 }

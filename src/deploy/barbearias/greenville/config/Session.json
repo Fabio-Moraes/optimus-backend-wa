@@ -1,11 +1,11 @@
 {
-    "Business": "BARBEARIA IRMÃO JAMES",
+    "Business": "BARBEARIA GREENVILLE",
     "Oneservice": "Corte de cabelo",
     "Twoservice": "Barba/sobrancelha",
     "Threeservice": "Cabelo e barba/sobrancelha",
     "Otrerservice": "Serviços variados",
-    "Employee1": "Ze Barbeiro",
-    "Employee2": "Gigante Daileon",
+    "Employee1": "Erivaldo Carneiro",
+    "Employee2": "Gabriel N",
     "Afternoon": "13:00, 13:30, 14:00, 14:30, 15:00, 15:30, 16:00, 16:30, 17:00, 17:30",
     "Morning": "07:30, 08:00, 08:30, 09:00, 09:30, 10:00, 10:30, 11:00, 11:30, 12:00"
 }

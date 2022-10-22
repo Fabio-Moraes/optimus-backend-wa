@@ -12,7 +12,7 @@ app.use(express.json());
 export class Server {
   constructor() {
     create({
-      sessionId: 'james_barbearia',
+      sessionId: 'barbearia_greenville',
       multiDevice: true,
       disableSpins: true,
       headless: true,
